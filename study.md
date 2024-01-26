@@ -40,6 +40,7 @@
     - [Strong consistency](#strong-consistency)
     - [Sequential consistency](#sequential-consistency)
     - [Causal consistency](#causal-consistency)
+      - [The CALM theorem](#the-calm-theorem)
     - [Eventual consistency](#eventual-consistency)
     - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
 - [Napkin math 🧻](#napkin-math-)
@@ -497,13 +498,20 @@ ChatGPT says,
 > "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
 
 ### Causal consistency
-Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that casually related operations are in a consistent order and preserves causality.
+Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that casually related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem. So, stay CALM (get it? stay calm!!? Funny.)
 
-Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
+#### The CALM theorem
+
+
+Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
 - It's consistent "enough" and easier to work on the eventual consistency.
 - Allows building a system that's available and partition tolerant.
 
 This requires that nodes *agree* on the causally related operations but may *disagree* on the order of unrelated ones. Put another way, the nodes preserve the logical order.
+
+Causal systems are typically backed by conflict-free replicated data types (CRDTs), such as
+- Last writer wins (LWW) - Values are associated with a logical timestamp/version. When the value is broadcasted, nodes only keep the greatest timestamp. Conflicts due to concurrent updates are usually resolved by taking the greater timestamp, but this might not always make sense.
+- Multi-value (MV) - Store the operations in a log of operations that all nodes share. New values are inserted into the MV register. Systems will need to share out their MVs.
 
 ChatGPT says,
 > "With causal consistency, you and your friends agree on some logical order for the messages. If you tell something important to Alice and then mention it to Bob, everyone knows that Alice got the message first. It's about maintaining the cause-and-effect relationship."
