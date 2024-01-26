@@ -5,8 +5,9 @@
     - [Summary](#summary)
     - [O(1)](#o1)
     - [O(logN)](#ologn)
-    - [O(N)](#on)
     - [O(KlogN)](#oklogn)
+    - [O(N)](#on)
+    - [O(KN)](#okn)
     - [O(NlogN)](#onlogn)
     - [O(N^2)](#on2)
     - [O(2^N)](#o2n)
@@ -68,8 +69,10 @@ Runtime | Name | Example
 --- | --- | --- 
 O(1) | Constant | Math, assignments
 O(logN) | Log | Binary search, binary search tree search
-O(N) | Linear | Traverse array, tree traversal
 O(KlogN) | K linear | K binary searches
+O(N) | Linear | Traverse array, tree traversal
+O(KN) | K Linear | Performing a linear operation K times
+O(N + M) | Linear NM | Traverse array, tree traversal on two separate collections
 O(NlogN) | Sort | Quick and merge sort, divide n' conquer
 O(N^2) | Quadratic | Nested loops
 O(2^N) | Exponential | Combinatorial, backtracking, permutations
@@ -103,6 +106,11 @@ for i := N; i > 0; i /= 2 {
 }
 ```
 
+### O(KlogN)
+Typically, when you need to do a log(N) process K times.
+- Heap push/pop K times, like merging N sorted lists
+- Binary search K times
+
 ### O(N)
 Linear time. Typically, looping thru a data struct a constant number of times.
 - Traversing an entire array or linked list.
@@ -116,13 +124,8 @@ for i := 0; i < N; i++ {
 }
 ```
 
-Note that, like the other runtimes, we ignore constant factors and lower order terms.
-5N^2 + N = 5N^2 = N^2
-
-### O(KlogN)
-Typically, when you need to do a log(N) process K times.
-- Heap push/pop K times, like merging N sorted lists
-- Binary search K times
+### O(KN)
+Typically, when you need to a N process K times. Very exciting.
 
 ### O(NlogN)
 When we need to do a logN time process N times.
@@ -171,8 +174,10 @@ Note, this one is hard to analyze/spot at first.
 Amortized time, meaning to gradualy write off the initial time costs, if an operation is rarely done. For example, if we had N^2*N tasks, we could consider the solution O(N) instead of O(N^2) = N*O(1) * O(N) if we only do the N^2 task rarely. For example, if we dynamically size an array one time at startup.
 
 ### Tricks
+Note that, like the other runtimes, we ignore constant factors and lower order terms: 5N^2 + N = 5N^2 = N^2
+
 Remember, N is sort of like infinity in math. It swallows
-smaller N terms and constants, unless multiplication is involved.
+smaller N terms and constants. Unlike infinity, it does not swallow up other terms if multiplication is involved.
 - 2N -> N
 - N + logN -> N
 - NlogN -> NlogN
@@ -535,7 +540,7 @@ Engineering is, in part, about tradeoffs. Distributed systems are no different. 
 - And also a slow response is as bad as not receiving one at all.
 - Network paritions are rare in a data center. It can certainly happen though.
 
-So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB}(https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
+So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
 
 # Napkin math 🧻
 Also known as back of the envelope calculations.
@@ -555,12 +560,12 @@ Network | ¢1/mo/GB | Networking utilization costs in AWS or GCP per month per G
 Obviously, zero downtime is ideal, but this ain't realistic. We want as close as possible to 100%, typically in some SLA/SLO. The nines themselves don't really tell you the actual amount of downtime allowed. What's 99.99% of 365 days? Why, it's 0.0365 days obviously! Yeah, no, still not helpful. Memorize the times.
 
 No. of Nines | % | Annual downtime | Daily downtime
--- | --- | ---
+-- | --- | --- | ---
 1.5 nines | 95% | 18 days | 75min
 2 nines | 99% | 4 days | 15min
 3 nines | 99.9% | 9hrs | 2min
 4 nines | 99.99% | 50min | 9s
-5 nines | 99.999% | 5min | 900ms 
+5 nines | 99.999% | 5min | 900ms
 6 nines | 99.9999% | 30sec | 90ms
 
 Also note that downtime among serial systems is typically additive because we can't assume downtime overlaps. In otherwords, two, 6-nine services in serial will not yield 6-nines because you'll have up to 1 min of downtime worst-case and 1min > 30sec. If we have a pipeline with services A -> B -> C, each service with 10 minutes of annual downtime, then it's 30 minutes of downtime total in the worst case.
