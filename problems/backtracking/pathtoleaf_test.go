@@ -1,16 +1,17 @@
-package binary
+package backtracking
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/sgago/algomon/col/node/binary"
 	"github.com/sgago/algomon/col/queue"
 	"github.com/sgago/algomon/col/tree/bst"
 )
 
 func TestPathToLeaf(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, -2, -3, -4, -5, -6, -7}
-	tree := bst.NewTree[int](arr...)
+	tree := bst.New[int](arr...)
 
 	fmt.Printf("DFS traversal preorder is: %v\n", tree.PreOrder())
 	actual := PathToLeaf(tree)
@@ -29,12 +30,12 @@ func PathToLeaf(tree *bst.Tree[int]) *[][]int {
 
 // The queue (q) pointer and output (o) pointers, are similar to passsing global state around.
 // IF there's too many args, time to consider either looping + a datastruct or a shared state struct to pass thru to each node.
-func pathToLeaf(n *bst.Node[int], q *queue.Queue[int], o *[][]int) {
+func pathToLeaf(n *binary.Node[int], q *queue.Queue[int], o *[][]int) {
 	if n == nil {
 		return
 	}
 
-	q.Enq(n.Value).Tail()
+	q.EnqTail(n.Val)
 
 	if n.Left == nil && n.Right == nil {
 		// Leaf node is a solution
@@ -51,5 +52,5 @@ func pathToLeaf(n *bst.Node[int], q *queue.Queue[int], o *[][]int) {
 	pathToLeaf(n.Right, q, o)
 
 	// Pop cause this node is done.
-	q.Deq().Tail()
+	q.DeqTail()
 }

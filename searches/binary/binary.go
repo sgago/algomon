@@ -1,8 +1,8 @@
 package binary
 
 import (
+	"github.com/sgago/algomon/comp"
 	"github.com/sgago/algomon/errs"
-	"github.com/sgago/algomon/types"
 )
 
 // SearchFunc searches a sorted or semi-sorted array for a target value or boundary condition, respectively.
@@ -54,7 +54,7 @@ func TrySearchFunc[T any](sorted []T, predicate func(idx int, val T) int) (int, 
 // Search searches a sorted array for a target value.
 //
 //	Time complexity is O(logN) since we cut the solution space in half each time.
-func Search[T types.PrimComp](sorted []T, target T) int {
+func Search[T comp.Types](sorted []T, target T) int {
 	idx, _ := SearchFunc(sorted, func(idx int, val T) int {
 		if val == target {
 			return 0
@@ -68,7 +68,7 @@ func Search[T types.PrimComp](sorted []T, target T) int {
 	return idx
 }
 
-func TrySearch[T types.PrimComp](arr []T, target T) (int, error) {
+func TrySearch[T comp.Types](arr []T, target T) (int, error) {
 	idx := Search(arr, target)
 
 	if idx == -1 {

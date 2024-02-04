@@ -6,7 +6,7 @@ import (
 )
 
 func TestBst(t *testing.T) {
-	tree := NewTree[int]()
+	tree := New[int]()
 
 	tree.Insert(5, 4, 6, 1, 7)
 

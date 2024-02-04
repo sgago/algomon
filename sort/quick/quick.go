@@ -1,6 +1,6 @@
 package quick
 
-import "github.com/sgago/algomon/slice"
+import "github.com/sgago/algomon/sliceutil"
 
 // SortFunc performs quicksort on the given slice using the provided comparison function
 func SortFunc[T any](arr *[]T, less func(i, j T) bool) {
@@ -31,11 +31,11 @@ func partition[T any](arr *[]T, low, high int, less func(i, j T) bool) int {
 		if !less(pivot, a[j]) {
 			i++
 			// Swap elements using the provided Swap function
-			slice.Swap(a, i, j)
+			sliceutil.Swap(a, i, j)
 		}
 	}
 
 	// Swap the pivot element to its correct position
-	slice.Swap(a, i+1, high)
+	sliceutil.Swap(a, i+1, high)
 	return i + 1
 }

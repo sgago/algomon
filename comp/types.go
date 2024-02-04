@@ -1,6 +1,6 @@
-package types
+package comp
 
-type PrimComp interface {
+type Types interface {
 	int |
 		int8 |
 		int16 |

@@ -1,8 +1,8 @@
 package bubble
 
 import (
-	"github.com/sgago/algomon/slice"
-	"github.com/sgago/algomon/types"
+	"github.com/sgago/algomon/comp"
+	"github.com/sgago/algomon/sliceutil"
 )
 
 // Sort a collection via bubble sort.
@@ -24,7 +24,7 @@ import (
 //	  Swapped: true
 //	  Swapped: false
 //	  Done
-func Sort[T types.PrimComp](arr []T) {
+func Sort[T comp.Types](arr []T) {
 	SortFunc[T](arr, func(i, j T) bool { return i < j })
 }
 
@@ -34,7 +34,7 @@ func SortFunc[T any](arr []T, less func(i, j T) bool) {
 
 		for i := 1; i < len(arr); i++ {
 			if !less(arr[i-1], arr[i]) {
-				slice.Swap(arr, i-1, i)
+				sliceutil.Swap(arr, i-1, i)
 				swapped = true
 			}
 		}

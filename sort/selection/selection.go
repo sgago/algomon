@@ -1,8 +1,8 @@
 package selection
 
 import (
-	"github.com/sgago/algomon/slice"
-	"github.com/sgago/algomon/types"
+	"github.com/sgago/algomon/comp"
+	"github.com/sgago/algomon/sliceutil"
 )
 
 // Sort a collection via selection sort.
@@ -20,7 +20,7 @@ import (
 //	[1 2 5 3 4] - Swap(3, 5)
 //	[1 2 3 5 4] - Swap(4, 5)
 //	[1 2 3 4 5] - Done
-func Sort[T types.PrimComp](arr []T) {
+func Sort[T comp.Types](arr []T) {
 	SortFunc[T](arr, func(i, j T) bool { return i < j })
 }
 
@@ -35,7 +35,7 @@ func SortFunc[T any](arr []T, less func(i, j T) bool) {
 		}
 
 		if minIdx != i {
-			slice.Swap(arr, minIdx, i)
+			sliceutil.Swap(arr, minIdx, i)
 		}
 	}
 }

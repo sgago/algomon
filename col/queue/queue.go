@@ -71,31 +71,6 @@ func (q *Queue[T]) Cap() int {
 	return cap(q.v)
 }
 
-// Enq adds values to the Queue.
-func (q *Queue[T]) Enq(vals ...T) *EnqOp[T] {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
-
-	return &EnqOp[T]{
-		v: vals,
-		q: q,
-	}
-}
-
-// Deq removes and returns the value at the end of the Queue.
-func (q *Queue[T]) Deq() *DeqOp[T] {
-	if q.IsSync() {
-		defer q.mu.Unlock()
-		q.mu.Lock()
-	}
-
-	return &DeqOp[T]{
-		q: q,
-	}
-}
-
 // TryDeq attempts to pop a value from the start of the Queue and returns an error if the Queue is empty.
 func (q *Queue[T]) TryDeq() (T, error) {
 	if q.IsSync() {
@@ -110,18 +85,6 @@ func (q *Queue[T]) TryDeq() (T, error) {
 	}
 
 	return *new(T), errs.Empty
-}
-
-// Peek returns the value at the start of the Queue without removing it.
-func (q *Queue[T]) Peek() *PeekOp[T] {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
-
-	return &PeekOp[T]{
-		q: q,
-	}
 }
 
 // TryPeek attempts to peek at the start of the Queue and returns an error if the Queue is empty.
@@ -155,134 +118,120 @@ func (q *Queue[T]) IsSync() bool {
 	return q.sync
 }
 
-// Represents an enqueue operation.
-type EnqOp[T any] struct {
-	q *Queue[T]
-	v []T
-}
-
-func (op *EnqOp[T]) Head() {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) EnqHead(vals ...T) {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	op.q.v = append(op.v, op.q.v...)
+	q.v = append(vals, q.v...)
 }
 
-func (op *EnqOp[T]) Tail() {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) EnqTail(vals ...T) {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	op.q.v = append(op.q.v, op.v...)
+	q.v = append(q.v, vals...)
 }
 
-type DeqOp[T any] struct {
-	q *Queue[T]
-}
-
-func (op *DeqOp[T]) Head() T {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) DeqHead() T {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	result := op.q.v[0]
-	op.q.v = op.q.v[1:op.q.Len()]
+	result := q.v[0]
+	q.v = q.v[1:q.Len()]
 	return result
 }
 
-func (op *DeqOp[T]) TryHead() (T, error) {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) TryDeqHead() (T, error) {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	if len(op.q.v) == 0 {
+	if len(q.v) == 0 {
 		return *new(T), errs.Empty
 	}
 
-	result := op.q.v[0]
-	op.q.v = op.q.v[1:op.q.Len()]
+	result := q.v[0]
+	q.v = q.v[1:q.Len()]
 	return result, nil
 }
 
-func (op *DeqOp[T]) Tail() T {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) DeqTail() T {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	result := op.q.v[len(op.q.v)-1]
-	op.q.v = op.q.v[0 : op.q.Len()-1]
+	result := q.v[len(q.v)-1]
+	q.v = q.v[0 : q.Len()-1]
 	return result
 }
 
-func (op *DeqOp[T]) TryTail() (T, error) {
-	if op.q.IsSync() {
-		defer op.q.mu.Lock()
-		op.q.mu.Unlock()
+func (q *Queue[T]) TryDeqTail() (T, error) {
+	if q.IsSync() {
+		defer q.mu.Lock()
+		q.mu.Unlock()
 	}
 
-	if len(op.q.v) == 0 {
+	if len(q.v) == 0 {
 		return *new(T), errs.Empty
 	}
 
-	result := op.q.v[len(op.q.v)-1]
-	op.q.v = op.q.v[0 : op.q.Len()-1]
+	result := q.v[len(q.v)-1]
+	q.v = q.v[0 : q.Len()-1]
 	return result, nil
 }
 
-type PeekOp[T any] struct {
-	q *Queue[T]
-}
-
-func (op *PeekOp[T]) Head() T {
-	if op.q.IsSync() {
-		defer op.q.mu.RLock()
-		op.q.mu.RUnlock()
+func (q *Queue[T]) PeekHead() T {
+	if q.IsSync() {
+		defer q.mu.RLock()
+		q.mu.RUnlock()
 	}
 
-	result := op.q.v[0]
+	result := q.v[0]
 	return result
 }
 
-func (op *PeekOp[T]) TryHead() (T, error) {
-	if op.q.IsSync() {
-		defer op.q.mu.RLock()
-		op.q.mu.RUnlock()
+func (q *Queue[T]) TryPeekHead() (T, error) {
+	if q.IsSync() {
+		defer q.mu.RLock()
+		q.mu.RUnlock()
 	}
 
-	if len(op.q.v) == 0 {
+	if len(q.v) == 0 {
 		return *new(T), errs.Empty
 	}
 
-	result := op.q.v[0]
+	result := q.v[0]
 	return result, nil
 }
 
-func (op *PeekOp[T]) Tail() T {
-	if op.q.IsSync() {
-		defer op.q.mu.RLock()
-		op.q.mu.RUnlock()
+func (q *Queue[T]) PeekTail() T {
+	if q.IsSync() {
+		defer q.mu.RLock()
+		q.mu.RUnlock()
 	}
 
-	result := op.q.v[len(op.q.v)-1]
+	result := q.v[len(q.v)-1]
 	return result
 }
 
-func (op *PeekOp[T]) TryTail() (T, error) {
-	if op.q.IsSync() {
-		defer op.q.mu.RLock()
-		op.q.mu.RUnlock()
+func (q *Queue[T]) TryPeekTail() (T, error) {
+	if q.IsSync() {
+		defer q.mu.RLock()
+		q.mu.RUnlock()
 	}
 
-	if len(op.q.v) == 0 {
+	if len(q.v) == 0 {
 		return *new(T), errs.Empty
 	}
 
-	result := op.q.v[len(op.q.v)-1]
+	result := q.v[len(q.v)-1]
 	return result, nil
 }

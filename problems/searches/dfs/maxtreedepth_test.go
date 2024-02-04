@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/sgago/algomon/col/node/binary"
 	"github.com/sgago/algomon/col/tree/bst"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_MaxDepthOfATree_WithLocalState(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, -2, -3, -4, -5, -6, -7}
-	tree := bst.NewTree[int](arr...)
+	tree := bst.New[int](arr...)
 
 	fmt.Printf("DFS traversal preorder is: %v\n", tree.PreOrder())
 	depth := FindMaxDepth_WithLocalState(tree)
@@ -22,7 +23,7 @@ func FindMaxDepth_WithLocalState(tree *bst.Tree[int]) int {
 	return findMaxDepth_WithLocalState(tree.Root, -1)
 }
 
-func findMaxDepth_WithLocalState(node *bst.Node[int], depth int) int {
+func findMaxDepth_WithLocalState(node *binary.Node[int], depth int) int {
 	if node == nil {
 		return depth
 	}
@@ -45,7 +46,7 @@ var max int = -1
 
 func Test_MaxDepthOfATree_WithGlobalState(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, -2, -3, -4, -5, -6, -7}
-	tree := bst.NewTree[int](arr...)
+	tree := bst.New[int](arr...)
 
 	fmt.Printf("DFS traversal preorder is: %v\n", tree.PreOrder())
 	depth := FindMaxDepth_WithGlobalState(tree)
@@ -59,7 +60,7 @@ func FindMaxDepth_WithGlobalState(tree *bst.Tree[int]) int {
 	return max
 }
 
-func findMaxDepth_WithGlobalState(node *bst.Node[int], depth int) {
+func findMaxDepth_WithGlobalState(node *binary.Node[int], depth int) {
 	if node == nil {
 		if max < depth {
 			max = depth

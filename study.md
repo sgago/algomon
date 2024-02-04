@@ -29,8 +29,10 @@
     - [Binary search trees (BST)](#binary-search-trees-bst)
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
+  - [Heaps and priority queues ⛰️](#heaps-and-priority-queues-️)
   - [Depth first search (DFS) 🔍](#depth-first-search-dfs-)
   - [Backtracking 🔙](#backtracking-)
+  - [Dynamic programming (DP)](#dynamic-programming-dp)
 - [Systems design 🖥️](#systems-design-️)
   - [The OSI model](#the-osi-model)
   - [Load balancing strategies 🔄](#load-balancing-strategies-)
@@ -42,6 +44,7 @@
     - [Sequential consistency](#sequential-consistency)
     - [Causal consistency](#causal-consistency)
       - [The CALM theorem](#the-calm-theorem)
+    - [Back to causal consistency](#back-to-causal-consistency)
     - [Eventual consistency](#eventual-consistency)
     - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
 - [Napkin math 🧻](#napkin-math-)
@@ -236,34 +239,21 @@ A summary of common algorithms, courtesy of ChatGPT.
 
 
 ### Insertion sort
-1. 5 3 1 2 4 - 5 > 3, so swap
-2. 3 5 1 2 4 - 5 > 1, so swap
-3. 3 1 5 2 4 - 3 > 1, so swap
-4. 1 3 5 2 4 - Finished moving 1 to the front, now we can look at 3 5 2 4 part
+```go
+func InsertionSort(arr []int) {
+	for i := 1; i < len(arr); i++ {
+		// This is the magic. j starts at the ith element and walks smaller elements to the front of the array.
+		// So, while j-1 > j, swap it so that j-1 < j and decrement j. Note j > 0 cause we're doing j-1 stuff.
+		for j := i; j > 0 && arr[j-1] > arr[j]; j-- {
+			sliceutil.Swap(arr, j-1, j)
+		}
+	}
+}
+```
 
 ### Selection sort
-1. 5 3 1 2 4
-    - Min is 1
-    - Result 1
-2. 5 3 1 2 4
-    - Min is 2
-    - Result 1 2
-3. 5 3 1 2 4
-   - Next min is 3
-   - Result 1 2 3
-4. 5 3 1 2 4
-   - Next min is 4
-   - Result 1 2 3 4
-5. 5 3 1 2 4
-   - Next min is 5
-   - Result 1 2 3 4 5
-6. Done. Return the result array.
 
 ### Bubble sort
-1. 5 3 1 2 4 - 5 > all, so set swapped to true and walk it back until it's the last element or smaller than all those that come after it. swapped = true
-2. 3 1 2 4 5 - 3 > 1 and 2 but not 4. Walk it back and set swapped to true. swapped = true
-3. 1 2 3 4 5 - We're sorted now, but the algorithm doesn't know that. Walk the array again checking for more things to swap. There's nothing to swap, swapped stays false, and we exit. swapped = true
-4. 1 2 3 4 5 - swapped = false, nothing to do so we can exit.
 
 ## Trees 🌲
 Trees are a type of graph composed of nodes and edges.
@@ -341,7 +331,7 @@ Perfect trees are used to estimate time complexity for combinatorial problems wh
 - The total number of nodes is = 2 * leaf nodes - 1.
 
 ### Binary search trees (BST)
-BSTs are a special type of tree where all left descendents < node < all right descendents.
+BSTs are a special type of binary tree where all left descendents < node < all right descendents.
 ```
       8
      / \
@@ -352,6 +342,7 @@ BSTs are a special type of tree where all left descendents < node < all right de
         7
 ```
 Notice that 3 is to the left of 8 because 3 < 8. Similarily, 14 is to the right of 10.
+Note that the in-order traversal of the tree visits the nodes in monotonically increasing order.
 
 ### Balanced and unbalanced binary trees
 Unbalanced trees are have a search time of N. The start to look more like a list than a tree.
@@ -382,6 +373,84 @@ Tree traversal are types of traveling through the nodes of a tree.
 - In-order visits the left branch, current node, then right branch.
 - Pre-order visits the current node, left subtree, and right subtree.
 - Post-order visits the left subtree, right subtree, and current node.
+
+For example, given the following binary search tree,
+```
+      8
+     / \
+    3   10
+   / \    \
+  1   5    14
+       \
+        7
+```
+the visits to each node would be:
+- In-order: 1 3 5 7 8 10 14
+- Pre-order: 8 3 1 5 7 10 14
+- Post-order: 1 7 5 3 14 10 8
+
+## Heaps and priority queues ⛰️
+A min heap is a special tree data structure where
+1. Almost complete - every level in the tree is almost filled, except the last level. The last level is left justified.
+1. Each node has a greater key (priority) than it's parent.
+
+Here's a heap structure:
+```
+       1
+     /   \
+    2     3
+   / \   / \
+  7   8 9   11
+  |
+  12
+```
+
+This is not a heap:
+```
+       1
+     /   \
+    2     3
+   / \   / \
+  7   8 9   11
+  |
+  5 // Need to heapify this, 5 < 7, so our heap property is broken
+```
+
+Also, not a heap:
+```
+       1
+     /   \
+    2     3
+   / \   / \
+  7   8 9   11
+      |
+      12 // Need to left justify this
+```
+
+Also, not a heap:
+```
+       1
+     /   \
+    2     3
+   / \   /
+  7   8 9 // Need to fill intermediate levels
+  |
+  12
+```
+
+Couple notes:
+- Max heaps are the same, but we just change the each-child-key-is-greater property to each child is less.
+- Usually, heaps are binary tree, but you can also get k-ary heaps or k-heaps.
+- A priority queue is an abstraction on the heap, a min/max heap is the concrete implementation.
+- They are typically implemented with an array.
+- It's a sorted tree but it is not a binary search tree.
+
+Heaps support three main operations:
+1. Heapify - Rearrange the nodes such that the heap such that the nodes are in min keys are always the at the root. This is an O(logN) operation.
+2. Insert - Inserts a new element into the heap and calls heapify because to maintain the heap properties. This is an O(logN) operation.
+3. Pop/Delete - Removes and returns the min root element. Another O(logN) operation.
+
+In it's use, it's sort of like a stack. Push nodes in, pop nodes out except you always get the min keyed node.
 
 ## Depth first search (DFS) 🔍
 A depth first search looks for solutions by going deep first. That is, it searches
@@ -436,6 +505,15 @@ Backtracking tacks on some new concepts on top of trees and DFS.
 2. We can drag state around via parameters/returns or with global/struct variables.
 3. If we get some crazy 2^N to N! memory usage with backtracking combinatorial problems, we may need to memoize intermediate solutions to cut down on memory usage. For a small to mid N, N! will kill our poor computer. Memoize typically means using a map or similar to store intermediate and final solutions to the combinatorial problems.
 
+## Dynamic programming (DP)
+A problem can be solved via dynamic programming if
+1. The problem can be divided into sub-problems
+2. The sub-problems from bullet 1 overlap
+
+Really, DP == DFS + memoization + pruning. Pruning is important, to save space and reduced wasted calculations.
+
+In DP, the formula used to tabulate, like dp[i] = dp[i - 1] + dp[i - 2], is called the recurrene relation and is critical.
+
 # Systems design 🖥️
 
 ## The OSI model
@@ -475,13 +553,14 @@ References:
 - [Load balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques)
 
 ## Consistency Models
-Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance.
+Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
 
 ### Linearizability
 Also known as atomic consistency. This is a specific form of strong consistency which adds real-time ordering constraints to operations.
 - At some point, the operation appears to occur instantly, called the linearization point.
-- This is a stronger form of consistency than strong (lol) due to the stringent ordering.
+- This is a stronger form of consistency than strong (lol, great, not confusing at all) due to the stringent ordering.
 - It's also probably the slowest due to the ordering, synchronizing, and coordination involved. Getting all the computers to agree (coordination) takes time.
+- The emphasis is all on real-time ordering. When clients check back later, the linearized system updates the data between reads.
 
 ChatGPT says,
 > "Imagine you and your friend Alice have magical walkie-talkies. With linearizability, when you send a message to Alice, it's like she receives it instantly, and her response also comes back to you immediately. It's as if the messages are magically happening at the same time."
@@ -506,8 +585,22 @@ ChatGPT says,
 Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that casually related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem. So, stay CALM (get it? stay calm!!? Funny.)
 
 #### The CALM theorem
+The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
 
+Logically monotonic means that the output only further refines the input and there's no taking back any prior input.
 
+Very important note: The consistency in CALM is not the same as the consistency in CAP.
+
+Variable assignment is non-monotonic. When you assign it something, the previous value is gone forever. Take a counter value that does
+
+write(1), write(2), write(3) => 3
+but then if they show up out of order:
+write(1), write(3), write(2) => 2
+
+In contrast, incrementing allows us to reorder in any way and still get the correct output:
+increment(1), increment(1), increment(1) => 3
+
+### Back to causal consistency
 Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
 - It's consistent "enough" and easier to work on the eventual consistency.
 - Allows building a system that's available and partition tolerant.
@@ -589,7 +682,6 @@ You may need to consider LBs+1, LBs+2, or 2*LBs. The more nines, the more expens
 ## Serialization
 
 ## Hashing
-
 
 # General References
 - [System design primer on GitHub](https://github.com/donnemartin/system-design-primer)
