@@ -1,4 +1,4 @@
-package casstack
+package stack
 
 // Reference: https://www.geeksforgeeks.org/lock-free-stack-using-java/
 
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func TestStackC(t *testing.T) {
-	s := CasStack[int]{}
+func TestStack(t *testing.T) {
+	s := Stack[int]{}
 
 	s.Push(123)
 	result := s.Pop()
@@ -18,10 +18,10 @@ func TestStackC(t *testing.T) {
 	fmt.Printf("%v", result)
 }
 
-func TestStackCPopConcurrent(t *testing.T) {
+func TestStackPopConcurrent(t *testing.T) {
 	const stackSize = 1000
 
-	s := CasStack[int]{}
+	s := Stack[int]{}
 
 	// Populate the stack with numbers from 1 to stackSize
 	for i := 0; i < stackSize; i++ {

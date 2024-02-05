@@ -16,6 +16,7 @@ Step 2: Brainstorm.
 Step 3: Psuedocode.
 	- Fixing comments is faster than fixing code, always.
 	- You'll probably have some mistakes in it. That's cool.
+	- If it's DFS, BFS, or DP, time to draw out the tree
 Step 4: Code it.
 
 Let's practice now.

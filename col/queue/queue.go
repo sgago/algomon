@@ -39,12 +39,7 @@ func (s *Queue[T]) Slice() []T {
 
 // String returns this collection represented as a string.
 func (q *Queue[T]) String() string {
-	if q.IsSync() {
-		defer q.mu.RUnlock()
-		q.mu.RLock()
-	}
-
-	return fmt.Sprintf("%v", q.v)
+	return fmt.Sprintf("%v", q.Slice())
 }
 
 // Len returns the number of elements in this Queue.
@@ -99,23 +94,6 @@ func (q *Queue[T]) TryPeek() (T, error) {
 	}
 
 	return *new(T), errs.Empty
-}
-
-// Sync sets the synchronization flag for the collection.
-// If enable is true, it enables synchronization, meaning that
-// concurrent access to the Queue will be synchronized using locks.
-// If enable is false, it disables synchronization, allowing
-// concurrent access without additional synchronization.
-func (q *Queue[T]) Sync(enable bool) {
-	q.sync = enable
-}
-
-// IsSync returns true if the collection is configured for synchronization,
-// meaning that concurrent access is synchronized using locks.
-// Returns false if synchronization is disabled,
-// allowing concurrent access without additional synchronization.
-func (q *Queue[T]) IsSync() bool {
-	return q.sync
 }
 
 func (q *Queue[T]) EnqHead(vals ...T) {
@@ -234,4 +212,21 @@ func (q *Queue[T]) TryPeekTail() (T, error) {
 
 	result := q.v[len(q.v)-1]
 	return result, nil
+}
+
+// Sync sets the synchronization flag for the collection.
+// If enable is true, it enables synchronization, meaning that
+// concurrent access to the Queue will be synchronized using locks.
+// If enable is false, it disables synchronization, allowing
+// concurrent access without additional synchronization.
+func (q *Queue[T]) Sync(enable bool) {
+	q.sync = enable
+}
+
+// IsSync returns true if the collection is configured for synchronization,
+// meaning that concurrent access is synchronized using locks.
+// Returns false if synchronization is disabled,
+// allowing concurrent access without additional synchronization.
+func (q *Queue[T]) IsSync() bool {
+	return q.sync
 }

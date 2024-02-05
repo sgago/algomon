@@ -3,6 +3,7 @@
 - [Data structures and algorithms](#data-structures-and-algorithms)
   - [Runtimes 🚀](#runtimes-)
     - [Summary](#summary)
+    - [Go sort](#go-sort)
     - [O(1)](#o1)
     - [O(logN)](#ologn)
     - [O(KlogN)](#oklogn)
@@ -30,6 +31,7 @@
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
   - [Heaps and priority queues ⛰️](#heaps-and-priority-queues-️)
+    - [Go heap](#go-heap)
   - [Depth first search (DFS) 🔍](#depth-first-search-dfs-)
   - [Backtracking 🔙](#backtracking-)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
@@ -81,6 +83,27 @@ O(N^2) | Quadratic | Nested loops
 O(2^N) | Exponential | Combinatorial, backtracking, permutations
 O(N!) | Factorial | Combinatorial, backtracking, permutations
 Amoritized | Amoritized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
+
+### Go sort
+In, go you don't need to author your own sorting algorithm. You can use slices.Sort or similar.
+```go
+arr := []int{5, 3, 1, 4, 2}
+slices.Sort(arr)
+
+// OR
+
+cmp := func(a, b int) int {
+  if a == b {
+    return 0
+  } else if a > b {
+    return 1
+  }
+
+  return -1
+}
+
+slices.SortFunc(arr, cmp)
+```
 
 ### O(1)
 Constant time. A constant set of of operations.
@@ -451,6 +474,57 @@ Heaps support three main operations:
 3. Pop/Delete - Removes and returns the min root element. Another O(logN) operation.
 
 In it's use, it's sort of like a stack. Push nodes in, pop nodes out except you always get the min keyed node.
+
+### Go heap
+We don't have to author a heap from scratch.
+In go, we can use the alias a slice type and implement heap.Interface on it:
+```go
+// Alias a slice type
+type MinHeap []int
+
+// And implement the heap.Interface type.
+var _ heap.Interface = (*MinHeap)(nil)
+
+func (h *MinHeap) Len() int {
+	return len(*h)
+}
+
+func (h *MinHeap) Less(i int, j int) bool {
+	return (*h)[i] < (*h)[j]
+}
+
+func (h *MinHeap) Pop() any {
+	result := (*h)[h.Len()-1]
+	*h = (*h)[:h.Len()-1]
+	return result
+}
+
+func (h *MinHeap) Push(x any) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MinHeap) Swap(i int, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
+
+func TestHeap(t *testing.T) {
+	// Create an empty MinHeap
+	h := &MinHeap{}
+
+	// Push elements onto the heap h, using heap.Push(h, whatever)
+	heap.Push(h, 3)
+	heap.Push(h, 1)
+	heap.Push(h, 4)
+	heap.Push(h, 2)
+
+	// Pop elements from the heap h (retrieve in sorted order for a min-heap)
+	// using the heap.Pop(h)
+	for h.Len() > 0 {
+		fmt.Printf("%d\v", heap.Pop(h))
+	}
+}
+
+```
 
 ## Depth first search (DFS) 🔍
 A depth first search looks for solutions by going deep first. That is, it searches

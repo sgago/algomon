@@ -1,9 +1,10 @@
-// Package casstack implements a compare-and-swap (CAS) first-in
+// Package cas/stack implements a compare-and-swap (CAS) first-in
 // last-out (FILO) collection that supports concurrent operations.
 // Reference: https://www.geeksforgeeks.org/lock-free-stack-using-java/
-package casstack
+package stack
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/sgago/algomon/errs"
@@ -18,8 +19,8 @@ type node[T any] struct {
 	next atomic.Pointer[node[T]]
 }
 
-// CasStack is a compare-and-swap (CAS) stack that supports concurrent operations.
-type CasStack[T any] struct {
+// Stack is a compare-and-swap (CAS) stack that supports concurrent operations.
+type Stack[T any] struct {
 	// A pointer to the top (head) node of the stack.
 	head atomic.Pointer[node[T]]
 
@@ -28,23 +29,23 @@ type CasStack[T any] struct {
 }
 
 // New creates a new CasStack and initializes it with the given values.
-func New[T any](vals ...T) *CasStack[T] {
-	s := &CasStack[T]{}
-
-	for _, v := range vals {
-		s.Push(v)
-	}
-
+func New[T any](vals ...T) *Stack[T] {
+	s := &Stack[T]{}
+	s.Push(vals...)
 	return s
 }
 
 // Len returns the current length of the stack.
-func (s *CasStack[T]) Len() int {
+func (s *Stack[T]) Len() int {
 	return int(s.len.Load())
 }
 
+func (s *Stack[T]) Empty() bool {
+	return s.Len() > 0
+}
+
 // Push adds values to the top of the stack using CAS operations for concurrency safety.
-func (s *CasStack[T]) Push(vals ...T) {
+func (s *Stack[T]) Push(vals ...T) {
 	for _, v := range vals {
 		new := &node[T]{
 			val:  v,
@@ -60,12 +61,12 @@ func (s *CasStack[T]) Push(vals ...T) {
 }
 
 // Peek returns the value at the top of the stack without removing it.
-func (s *CasStack[T]) Peek() T {
+func (s *Stack[T]) Peek() T {
 	return s.head.Load().val
 }
 
 // TryPeek attempts to peek at the top of the stack and returns an error if the stack is empty.
-func (s *CasStack[T]) TryPeek() (T, error) {
+func (s *Stack[T]) TryPeek() (T, error) {
 	h := s.head.Load()
 
 	if h == nil {
@@ -78,13 +79,12 @@ func (s *CasStack[T]) TryPeek() (T, error) {
 }
 
 // Pop removes and returns the value at the top of the stack.
-func (s *CasStack[T]) Pop() T {
+func (s *Stack[T]) Pop() T {
 	curr := s.head.Load()
-
 	// This is where the magic happens.
 	// If s.head is the same as curr, then we swap.
-	// If s.head is different because another thread modified it, we spin, reload curr, and try again.
-	for !s.head.CompareAndSwap(curr, curr.next.Load()) {
+	// If s.head is different because another thread modified it, we spin: reload curr and try it again.
+	for !s.head.CompareAndSwap(s.head.Load(), curr.next.Load()) {
 		curr = s.head.Load()
 	}
 
@@ -94,7 +94,7 @@ func (s *CasStack[T]) Pop() T {
 }
 
 // TryPop attempts to pop a value from the top of the stack and returns an error if the stack is empty.
-func (s *CasStack[T]) TryPop() (T, error) {
+func (s *Stack[T]) TryPop() (T, error) {
 	curr := s.head.Load()
 
 	for curr != nil && !s.head.CompareAndSwap(curr, curr.next.Load()) {
@@ -108,4 +108,21 @@ func (s *CasStack[T]) TryPop() (T, error) {
 	s.len.Add(-1)
 
 	return curr.val, nil
+}
+
+func (s *Stack[T]) Slice() []T {
+	results := make([]T, 0, s.Len())
+
+	curr := s.head.Load()
+	for curr != nil {
+		results = append(results, curr.val)
+		curr = curr.next.Load()
+	}
+
+	return results
+}
+
+func (s *Stack[T]) String() string {
+	results := s.Slice()
+	return fmt.Sprintf("%v", results)
 }

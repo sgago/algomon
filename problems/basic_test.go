@@ -1,7 +1,10 @@
 package problems
 
 import (
+	"container/heap"
 	"fmt"
+	"slices"
+	"sort"
 	"testing"
 )
 
@@ -39,6 +42,34 @@ func TestSlices(t *testing.T) {
 	fmt.Println("s[2:5]", s[2:5])
 	fmt.Println("s[2:]", s[2:])
 	fmt.Println("s[:3]", s[:3])
+}
+
+func TestSorting(t *testing.T) {
+	nums := []int{5, 3, 1, 4, 2}
+	strs := []string{"def", "xyz", "abc"}
+
+	// Method 1: The slices.Sort (newer), a generic func
+	slices.Sort(nums)
+	slices.Sort(strs)
+
+	fmt.Println("nums:", nums)
+	fmt.Println("strs:", strs)
+
+	// Method 2: For sorting other things with a compare func
+	cmp := func(a, b int) int {
+		if a == b {
+			return 0
+		} else if a > b {
+			return 1
+		}
+
+		return -1
+	}
+
+	slices.SortFunc(nums, cmp)
+
+	// Method 1: The sort.Ints (old)
+	sort.Ints(nums)
 }
 
 func TestChannels(t *testing.T) {
@@ -87,6 +118,52 @@ func TestChannelBuffer(t *testing.T) {
 	// or bursts of data are expected.
 }
 
-func TestChannelSynchronization(t *testing.T) {
+func TestChannelDirections(t *testing.T) {
+	// When using channels as params, you can increase the type safety by specifying directions.
 
+}
+
+// Alias a slice type
+type MinHeap []int
+
+// And implement the heap.Interface type.
+var _ heap.Interface = (*MinHeap)(nil)
+
+func (h *MinHeap) Len() int {
+	return len(*h)
+}
+
+func (h *MinHeap) Less(i int, j int) bool {
+	return (*h)[i] < (*h)[j]
+}
+
+func (h *MinHeap) Pop() any {
+	result := (*h)[h.Len()-1]
+	*h = (*h)[:h.Len()-1]
+	return result
+}
+
+func (h *MinHeap) Push(x any) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MinHeap) Swap(i int, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
+
+func TestHeap(t *testing.T) {
+	// Create an empty MinHeap
+	h := &MinHeap{}
+
+	// Push elements onto the heap h, using heap.Push(h, whatever)
+	heap.Push(h, 3)
+	heap.Push(h, 1)
+	heap.Push(h, 4)
+	heap.Push(h, 2)
+
+	// Pop elements from the heap h (retrieve in sorted order for a min-heap)
+	// using the heap.Pop(h)
+	for h.Len() > 0 {
+		fmt.Printf("%d\v", heap.Pop(h))
+	}
 }

@@ -44,12 +44,7 @@ func (s *Stack[T]) Slice() []T {
 
 // String returns this collection represented as a string.
 func (s *Stack[T]) String() string {
-	if s.IsSynchronized() {
-		defer s.mu.Unlock()
-		s.mu.Lock()
-	}
-
-	return fmt.Sprintf("%v", s.v)
+	return fmt.Sprintf("%v", s.Slice())
 }
 
 // Len returns the number of elements in this Stack.
@@ -63,11 +58,6 @@ func (s *Stack[T]) Len() int {
 }
 
 func (s *Stack[T]) Empty() bool {
-	if s.IsSynchronized() {
-		defer s.mu.RUnlock()
-		s.mu.RLock()
-	}
-
 	return s.Len() == 0
 }
 
@@ -84,8 +74,8 @@ func (s *Stack[T]) Cap() int {
 // Push adds values to the top of the Stack.
 func (s *Stack[T]) Push(vals ...T) {
 	if s.IsSynchronized() {
-		defer s.mu.Lock()
-		s.mu.Unlock()
+		defer s.mu.Unlock()
+		s.mu.Lock()
 	}
 
 	v := make([]T, len(vals))
@@ -98,8 +88,8 @@ func (s *Stack[T]) Push(vals ...T) {
 // Peek returns the value at the top of the stack without removing it.
 func (s *Stack[T]) Peek() T {
 	if s.IsSynchronized() {
-		defer s.mu.RLock()
-		s.mu.RUnlock()
+		defer s.mu.RUnlock()
+		s.mu.RLock()
 	}
 
 	return s.v[0]
@@ -108,8 +98,8 @@ func (s *Stack[T]) Peek() T {
 // TryPeek attempts to peek at the top of the stack and returns an error if the stack is empty.
 func (s *Stack[T]) TryPeek() (T, error) {
 	if s.IsSynchronized() {
-		defer s.mu.RLock()
-		s.mu.RUnlock()
+		defer s.mu.RUnlock()
+		s.mu.RLock()
 	}
 
 	if len(s.v) > 0 {
@@ -127,7 +117,7 @@ func (s *Stack[T]) Pop() T {
 	}
 
 	result := s.v[0]
-	s.v = s.v[:s.Len()-1]
+	s.v = s.v[:len(s.v)-1]
 	return result
 }
 
