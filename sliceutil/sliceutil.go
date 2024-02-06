@@ -1,31 +1,11 @@
 package sliceutil
 
-import "github.com/sgago/algomon/comp"
-
-func Swap[T any](col []T, idxA, idxB int) {
-	col[idxB], col[idxA] = col[idxA], col[idxB]
+func Swap[T any](s []T, idxA, idxB int) {
+	s[idxB], s[idxA] = s[idxA], s[idxB]
 }
 
-func Min[T comp.Types](vals ...T) T {
-	min := vals[0]
-
-	for _, val := range vals[1:] {
-		if min > val {
-			min = val
-		}
+func Reverse[T any](s []T) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
 	}
-
-	return min
-}
-
-func Max[T comp.Types](vals ...T) T {
-	max := vals[0]
-
-	for _, val := range vals[1:] {
-		if max < val {
-			max = val
-		}
-	}
-
-	return max
 }

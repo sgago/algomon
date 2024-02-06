@@ -28,7 +28,6 @@ import (
 
 	"github.com/sgago/algomon/col/node/binary"
 	"github.com/sgago/algomon/col/tree/bst"
-	"github.com/sgago/algomon/sliceutil"
 )
 
 func TestVisibleNodes(t *testing.T) {
@@ -37,29 +36,29 @@ func TestVisibleNodes(t *testing.T) {
 	visibleNode(tree.Root, math.MinInt)
 }
 
-func visibleNode(n *binary.Node[int], max int) int {
+func visibleNode(n *binary.Node[int], maxVal int) int {
 	result := 0
 
 	if n.Leaf() {
-		if n.Val > max {
+		if n.Val > maxVal {
 			return 1
 		}
 
 		return 0
 	}
 
-	if n.Val > max {
+	if n.Val > maxVal {
 		result++
 	}
 
-	max = sliceutil.Max(max, n.Val)
+	maxVal = max(maxVal, n.Val)
 
 	if n.Left != nil {
-		result += visibleNode(n.Left, max)
+		result += visibleNode(n.Left, maxVal)
 	}
 
 	if n.Right != nil {
-		result += visibleNode(n.Right, max)
+		result += visibleNode(n.Right, maxVal)
 	}
 
 	return result

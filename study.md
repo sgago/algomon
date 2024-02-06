@@ -10,6 +10,7 @@
     - [O(N)](#on)
     - [O(KN)](#okn)
     - [O(NlogN)](#onlogn)
+    - [O(|V| + |E|)](#ov--e)
     - [O(N^2)](#on2)
     - [O(2^N)](#o2n)
     - [O(N!)](#on-1)
@@ -34,6 +35,7 @@
     - [Go heap](#go-heap)
   - [Depth first search (DFS) 🔍](#depth-first-search-dfs-)
   - [Backtracking 🔙](#backtracking-)
+  - [Graphs 📊](#graphs-)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
 - [Systems design 🖥️](#systems-design-️)
   - [The OSI model](#the-osi-model)
@@ -52,6 +54,7 @@
 - [Napkin math 🧻](#napkin-math-)
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
+  - [Sorting](#sorting)
   - [Data storage](#data-storage)
   - [Networking](#networking)
   - [Computations](#computations)
@@ -158,6 +161,9 @@ When we need to do a logN time process N times.
 - Divide and conquer, where divide is logN and merge is N
 - Sorting can get down to this.
 
+### O(|V| + |E|)
+For both DFS and BFS on a graph, the time complexity is O(|V| + |E|), where V is the number of vertices and E is the number of edges. The number of edges in a graph could be 1 to |V|^2, we really don't know. So we include both terms here.
+
 ### O(N^2)
 Quadratic time. Not terrible for N < 1000, but does grow quickly.
 Usually, interviewers want better than this. If you've come up
@@ -259,7 +265,6 @@ A summary of common algorithms, courtesy of ChatGPT.
 | Shell Sort           | O(n log^2 n) (worst known)   | No        | Yes      | No        | No              | A variation of insertion sort with multiple passes and varying gap sizes. |
 | Radix Sort           | O(nk) (k is the number of digits) | Yes  | Yes      | No        | Yes             | Processes digits or elements in multiple passes, each pass sorted independently. |
 | Bucket Sort          | O(n^2) (worst case)           | Yes      | No       | Yes       | Yes             | Distributes elements into buckets and sorts each bucket independently. |
-
 
 ### Insertion sort
 ```go
@@ -579,6 +584,71 @@ Backtracking tacks on some new concepts on top of trees and DFS.
 2. We can drag state around via parameters/returns or with global/struct variables.
 3. If we get some crazy 2^N to N! memory usage with backtracking combinatorial problems, we may need to memoize intermediate solutions to cut down on memory usage. For a small to mid N, N! will kill our poor computer. Memoize typically means using a map or similar to store intermediate and final solutions to the combinatorial problems.
 
+## Graphs 📊
+Trees are rooted, connected, acyclic, undirected graphs. Trees contain N nodes and N-1 edges and there are only one path between 2 nodes.
+
+This is a tree (and a graph):
+```
+    1
+   / \
+  2   3
+ /
+4
+```
+
+This is only a graph due to the cycle and disconnected vertex.
+```
+    1
+   / \
+  2 - 3   // Cycle among nodes 1, 2, and 3
+
+4         // Node 4 is disconnected from others
+```
+
+Trees and graphs have different terminology
+- Verticies are nodes in trees.
+- Verticies are connected by edges.
+- Verticies connected by an edge are neighbors (children and parents in trees).
+- Edges can be directed or undirected. Usually the edges are undirected.
+- Paths are sequences of verticies. Cycles start and end at the same vertex.
+- A connected graph means every vertex is joined by a path to a vertex; otherwise, the graph is disconnected.
+
+
+Typically, graphs are stored via adjaceny lists or maps. For example, this graph
+```
+    1
+   / \
+  2   3
+ /
+4
+```
+
+can be represented in go via a map like
+
+```go
+graph := map[int][]int{
+  1: {2, 3},
+  2: {1, 2, 3},
+  3: {1, 2},
+  4: {2},
+}
+```
+
+Note that we don't need to have an adjacency list upfront to solve problems.
+
+So, for BFS and DFS on the graph, we can do the stack/queue dance through it. However, we need a way to dodge any cycles or we'll get stuck in an inf loop or stack overflow. To do this, we can store a map of visited nodes when searching. Like
+
+```go
+visited := make(map[int]bool)
+visited[1] = true
+```
+
+Another clever trick is to wipe out the value in the adjancency graph somehow. Make it negative or something that indicates we visited it to avoid storing a whole other data structure for visited/not-visited stuff.
+
+When deciding between BFS or DFS to explore graphs, choose BFS for shortest distance or graphs of unknown or infinite sizes due to exploring all adjacent neighbors first.
+
+DFS is better at using less memory for wide graphs (graphs with large breadth of factors). Put another way, BFS stores the breadth of the graph as it searches. DFS is also better at finding nodes that are far away such as a maze exit.
+
 ## Dynamic programming (DP)
 A problem can be solved via dynamic programming if
 1. The problem can be divided into sub-problems
@@ -738,6 +808,20 @@ No. of Nines | % | Annual downtime | Daily downtime
 Also note that downtime among serial systems is typically additive because we can't assume downtime overlaps. In otherwords, two, 6-nine services in serial will not yield 6-nines because you'll have up to 1 min of downtime worst-case and 1min > 30sec. If we have a pipeline with services A -> B -> C, each service with 10 minutes of annual downtime, then it's 30 minutes of downtime total in the worst case.
 
 You may need to consider LBs+1, LBs+2, or 2*LBs. The more nines, the more expensive it is.
+
+## Sorting
+We need to memorize a basic sorting algorithm, like insertion sort:
+```go
+func InsertionSort(arr []int) {
+	for i := 1; i < len(arr); i++ {
+		// This is the magic. j starts at the ith element and walks smaller elements to the front of the array.
+		// So, while j-1 > j, swap it so that j-1 is < j and decrement j. Note j > 0 cause we're doing j-- stuff.
+		for j := i; j > 0 && arr[j-1] > arr[j]; j-- {
+      arr[j-1], arr[j] = arr[j], arr[j-1] // Swap
+		}
+	}
+}
+```
 
 ## Data storage
 

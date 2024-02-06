@@ -3,19 +3,17 @@ package queue
 
 import (
 	"fmt"
-	"sync"
 
+	"github.com/sgago/algomon/col/conc"
 	"github.com/sgago/algomon/errs"
 )
 
 // Queue is a a first-in first-out (FIFO) collection.
 type Queue[T any] struct {
+	conc.RWLocker
+
 	// The elements in this collection.
 	v []T
-	// Indicates if this is a synchronized collection.
-	sync bool
-	// Mutex for synchronizing this collection.
-	mu sync.RWMutex
 }
 
 // New creates a new Queue and initializes it with the given values.
@@ -28,13 +26,10 @@ func New[T any](cap int, vals ...T) *Queue[T] {
 }
 
 // Slice returns the internal slice backing this collection.
-func (s *Queue[T]) Slice() []T {
-	if s.IsSync() {
-		defer s.mu.RUnlock()
-		s.mu.RLock()
-	}
+func (q *Queue[T]) Slice() []T {
+	defer q.RWLocker.Read()()
 
-	return s.v
+	return q.v
 }
 
 // String returns this collection represented as a string.
@@ -44,10 +39,7 @@ func (q *Queue[T]) String() string {
 
 // Len returns the number of elements in this Queue.
 func (q *Queue[T]) Len() int {
-	if q.IsSync() {
-		defer q.mu.RUnlock()
-		q.mu.RLock()
-	}
+	defer q.RWLocker.Read()()
 
 	return len(q.v)
 }
@@ -58,20 +50,14 @@ func (q *Queue[T]) Empty() bool {
 
 // Cap returns the maximum number of elements this Queue can have before being re-sized.
 func (q *Queue[T]) Cap() int {
-	if q.IsSync() {
-		defer q.mu.RUnlock()
-		q.mu.RLock()
-	}
+	defer q.RWLocker.Read()()
 
 	return cap(q.v)
 }
 
 // TryDeq attempts to pop a value from the start of the Queue and returns an error if the Queue is empty.
 func (q *Queue[T]) TryDeq() (T, error) {
-	if q.IsSync() {
-		defer q.mu.Unlock()
-		q.mu.Lock()
-	}
+	defer q.RWLocker.Write()()
 
 	if len(q.v) > 0 {
 		result := q.v[0]
@@ -84,10 +70,7 @@ func (q *Queue[T]) TryDeq() (T, error) {
 
 // TryPeek attempts to peek at the start of the Queue and returns an error if the Queue is empty.
 func (q *Queue[T]) TryPeek() (T, error) {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
+	defer q.RWLocker.Read()()
 
 	if len(q.v) > 0 {
 		return q.v[0], nil
@@ -97,28 +80,19 @@ func (q *Queue[T]) TryPeek() (T, error) {
 }
 
 func (q *Queue[T]) EnqHead(vals ...T) {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	q.v = append(vals, q.v...)
 }
 
 func (q *Queue[T]) EnqTail(vals ...T) {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	q.v = append(q.v, vals...)
 }
 
 func (q *Queue[T]) DeqHead() T {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	result := q.v[0]
 	q.v = q.v[1:q.Len()]
@@ -126,10 +100,7 @@ func (q *Queue[T]) DeqHead() T {
 }
 
 func (q *Queue[T]) TryDeqHead() (T, error) {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	if len(q.v) == 0 {
 		return *new(T), errs.Empty
@@ -141,10 +112,7 @@ func (q *Queue[T]) TryDeqHead() (T, error) {
 }
 
 func (q *Queue[T]) DeqTail() T {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	result := q.v[len(q.v)-1]
 	q.v = q.v[0 : q.Len()-1]
@@ -152,10 +120,7 @@ func (q *Queue[T]) DeqTail() T {
 }
 
 func (q *Queue[T]) TryDeqTail() (T, error) {
-	if q.IsSync() {
-		defer q.mu.Lock()
-		q.mu.Unlock()
-	}
+	defer q.RWLocker.Write()()
 
 	if len(q.v) == 0 {
 		return *new(T), errs.Empty
@@ -167,20 +132,14 @@ func (q *Queue[T]) TryDeqTail() (T, error) {
 }
 
 func (q *Queue[T]) PeekHead() T {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
+	defer q.RWLocker.Read()()
 
 	result := q.v[0]
 	return result
 }
 
 func (q *Queue[T]) TryPeekHead() (T, error) {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
+	defer q.RWLocker.Read()()
 
 	if len(q.v) == 0 {
 		return *new(T), errs.Empty
@@ -191,20 +150,14 @@ func (q *Queue[T]) TryPeekHead() (T, error) {
 }
 
 func (q *Queue[T]) PeekTail() T {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
+	defer q.RWLocker.Read()()
 
 	result := q.v[len(q.v)-1]
 	return result
 }
 
 func (q *Queue[T]) TryPeekTail() (T, error) {
-	if q.IsSync() {
-		defer q.mu.RLock()
-		q.mu.RUnlock()
-	}
+	defer q.RWLocker.Read()()
 
 	if len(q.v) == 0 {
 		return *new(T), errs.Empty
@@ -212,21 +165,4 @@ func (q *Queue[T]) TryPeekTail() (T, error) {
 
 	result := q.v[len(q.v)-1]
 	return result, nil
-}
-
-// Sync sets the synchronization flag for the collection.
-// If enable is true, it enables synchronization, meaning that
-// concurrent access to the Queue will be synchronized using locks.
-// If enable is false, it disables synchronization, allowing
-// concurrent access without additional synchronization.
-func (q *Queue[T]) Sync(enable bool) {
-	q.sync = enable
-}
-
-// IsSync returns true if the collection is configured for synchronization,
-// meaning that concurrent access is synchronized using locks.
-// Returns false if synchronization is disabled,
-// allowing concurrent access without additional synchronization.
-func (q *Queue[T]) IsSync() bool {
-	return q.sync
 }

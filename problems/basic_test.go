@@ -121,6 +121,35 @@ func TestChannelBuffer(t *testing.T) {
 func TestChannelDirections(t *testing.T) {
 	// When using channels as params, you can increase the type safety by specifying directions.
 
+	// sendFunc will only accept a channel for sending values
+	sendFunc := func(sendChan chan<- string, msg string) {
+		sendChan <- msg
+
+		// Uncommeting will yield a "invalid operation: cannot receive from send-only channel sendChan"
+		//myVal := <-sendChan
+	}
+
+	recvFunc := func(recvChan <-chan string) string {
+		//recvChan <- "uncommenting creates a 'invalid operation: cannot send to receive-only channel recvChan' error"
+		return <-recvChan
+	}
+
+	ch := make(chan string, 1)
+
+	sendFunc(ch, "hello")
+
+	fmt.Println(recvFunc(ch))
+}
+
+func TestMaps(t *testing.T) {
+	graph := map[int][]int{
+		1: {2, 3},
+		2: {1, 2, 3},
+		3: {1, 2},
+		4: {2},
+	}
+
+	fmt.Println(graph[1])
 }
 
 // Alias a slice type

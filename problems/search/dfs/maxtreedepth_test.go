@@ -42,7 +42,7 @@ func findMaxDepth_WithLocalState(node *binary.Node[int], depth int) int {
 
 // This is our "global" state here.
 // We could easily slap this variable into a new tree struct or similar.
-var max int = -1
+var maxVal int = -1
 
 func Test_MaxDepthOfATree_WithGlobalState(t *testing.T) {
 	arr := []int{1, 2, 3, 4, 5, -2, -3, -4, -5, -6, -7}
@@ -55,15 +55,15 @@ func Test_MaxDepthOfATree_WithGlobalState(t *testing.T) {
 }
 
 func FindMaxDepth_WithGlobalState(tree *bst.Tree[int]) int {
-	max = -1
-	findMaxDepth_WithGlobalState(tree.Root, max)
-	return max
+	maxVal = -1
+	findMaxDepth_WithGlobalState(tree.Root, maxVal)
+	return maxVal
 }
 
 func findMaxDepth_WithGlobalState(node *binary.Node[int], depth int) {
 	if node == nil {
-		if max < depth {
-			max = depth
+		if maxVal < depth {
+			maxVal = depth
 		}
 
 		return

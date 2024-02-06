@@ -2,8 +2,6 @@ package dynamic
 
 import (
 	"testing"
-
-	"github.com/sgago/algomon/sliceutil"
 )
 
 /*
@@ -36,12 +34,12 @@ func maximalSquare() int {
 
 	for col, val := range grid[0] {
 		memo[0][col] = val
-		best = sliceutil.Max(best, val)
+		best = max(best, val)
 	}
 
 	for row, val := range grid {
 		memo[row][0] = val[0]
-		best = sliceutil.Max(best, val[0])
+		best = max(best, val[0])
 	}
 
 	for r := range grid[1:] {
@@ -50,7 +48,7 @@ func maximalSquare() int {
 				continue
 			}
 
-			memo[r][c] = sliceutil.Min(
+			memo[r][c] = min(
 				memo[r-1][c],
 				memo[r][c-1],
 				memo[r-1][c-1],
