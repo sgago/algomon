@@ -72,6 +72,58 @@ func TestSorting(t *testing.T) {
 	sort.Ints(nums)
 }
 
+type dog struct {
+	name string
+}
+
+func TestParameters(t *testing.T) {
+	passIntByVal := func(x int) { x++ }
+
+	num := 99
+	passIntByVal(num)
+	fmt.Println("int pass by value:", num)
+
+	passIntByRef := func(x *int) { *x++ }
+	passIntByRef(&num)
+	fmt.Println("int pass by ref:", num)
+
+	rex := dog{
+		name: "rex",
+	}
+
+	passStructByVal := func(d dog) {
+		d.name += ", the good boy"
+	}
+
+	passStructByVal(rex)
+	fmt.Println("struct pass by value:", rex)
+
+	passStructByRef := func(d *dog) {
+		d.name += ", the good boy"
+	}
+
+	passStructByRef(&rex)
+	fmt.Println("struct pass by ref:", rex)
+
+	arr := []int{1, 2, 3}
+
+	passSliceByVal := func(a []int) {
+		a = append(a, 4, 5, 6) // Expected warning, this doesn't do anything
+		a[0] = 99
+	}
+
+	passSliceByVal(arr)
+	fmt.Println("slice pass by val:", arr)
+
+	passSliceByRef := func(a *[]int) {
+		*a = append(*a, 4, 5, 6) // Expected warning, that's the whole point of doing this
+		(*a)[0] = 99
+	}
+
+	passSliceByRef(&arr)
+	fmt.Println("slice pass by ref:", arr)
+}
+
 func TestChannels(t *testing.T) {
 	messages := make(chan string)
 

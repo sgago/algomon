@@ -3,14 +3,14 @@
 - [Data structures and algorithms](#data-structures-and-algorithms)
   - [Runtimes 🚀](#runtimes-)
     - [Summary](#summary)
-    - [Go sort](#go-sort)
     - [O(1)](#o1)
     - [O(logN)](#ologn)
     - [O(KlogN)](#oklogn)
     - [O(N)](#on)
     - [O(KN)](#okn)
-    - [O(NlogN)](#onlogn)
+    - [O(N + M)](#on--m)
     - [O(|V| + |E|)](#ov--e)
+    - [O(NlogN)](#onlogn)
     - [O(N^2)](#on2)
     - [O(2^N)](#o2n)
     - [O(N!)](#on-1)
@@ -22,6 +22,7 @@
     - [References](#references)
   - [Sorting 🔀](#sorting-)
     - [Summary](#summary-1)
+    - [Go sort](#go-sort)
     - [Insertion sort](#insertion-sort)
     - [Selection sort](#selection-sort)
     - [Bubble sort](#bubble-sort)
@@ -38,7 +39,8 @@
   - [Graphs 📊](#graphs-)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
 - [Systems design 🖥️](#systems-design-️)
-  - [The OSI model](#the-osi-model)
+  - [The Internet protocol suite](#the-internet-protocol-suite)
+    - [The reliable link layer](#the-reliable-link-layer)
   - [Load balancing strategies 🔄](#load-balancing-strategies-)
     - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
     - [Load balancing failover](#load-balancing-failover)
@@ -76,37 +78,18 @@ Also called "time complexity".
 Runtime | Name | Example
 --- | --- | --- 
 O(1) | Constant | Math, assignments
+O(alpha(N)) | Inverse Ackerman | Rare. Close to constant time; think O(4) at most. Appears is Disjointed Set Union.
 O(logN) | Log | Binary search, binary search tree search
 O(KlogN) | K linear | K binary searches
 O(N) | Linear | Traverse array, tree traversal
 O(KN) | K Linear | Performing a linear operation K times
 O(N + M) | Linear NM | Traverse array, tree traversal on two separate collections
+O(|V| + |E|) | Graph | Traverse graph with V vertices and E edges
 O(NlogN) | Sort | Quick and merge sort, divide n' conquer
 O(N^2) | Quadratic | Nested loops
 O(2^N) | Exponential | Combinatorial, backtracking, permutations
 O(N!) | Factorial | Combinatorial, backtracking, permutations
 Amoritized | Amoritized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
-
-### Go sort
-In, go you don't need to author your own sorting algorithm. You can use slices.Sort or similar.
-```go
-arr := []int{5, 3, 1, 4, 2}
-slices.Sort(arr)
-
-// OR
-
-cmp := func(a, b int) int {
-  if a == b {
-    return 0
-  } else if a > b {
-    return 1
-  }
-
-  return -1
-}
-
-slices.SortFunc(arr, cmp)
-```
 
 ### O(1)
 Constant time. A constant set of of operations.
@@ -154,15 +137,19 @@ for i := 0; i < N; i++ {
 ```
 
 ### O(KN)
-Typically, when you need to a N process K times. Very exciting.
+Typically, when you need to process N K times. Very exciting.
+
+### O(N + M)
+Typically, when you have two inputs of size N and M. Say you loop once N times and then loop M times.
+Again, very exciting.
+
+### O(|V| + |E|)
+For both DFS and BFS on a graph, the time complexity is O(|V| + |E|), where V is the number of vertices and E is the number of edges. The number of edges in a graph could be 1 to |V|^2, we really don't know. So we include both terms here.
 
 ### O(NlogN)
 When we need to do a logN time process N times.
 - Divide and conquer, where divide is logN and merge is N
 - Sorting can get down to this.
-
-### O(|V| + |E|)
-For both DFS and BFS on a graph, the time complexity is O(|V| + |E|), where V is the number of vertices and E is the number of edges. The number of edges in a graph could be 1 to |V|^2, we really don't know. So we include both terms here.
 
 ### O(N^2)
 Quadratic time. Not terrible for N < 1000, but does grow quickly.
@@ -265,6 +252,27 @@ A summary of common algorithms, courtesy of ChatGPT.
 | Shell Sort           | O(n log^2 n) (worst known)   | No        | Yes      | No        | No              | A variation of insertion sort with multiple passes and varying gap sizes. |
 | Radix Sort           | O(nk) (k is the number of digits) | Yes  | Yes      | No        | Yes             | Processes digits or elements in multiple passes, each pass sorted independently. |
 | Bucket Sort          | O(n^2) (worst case)           | Yes      | No       | Yes       | Yes             | Distributes elements into buckets and sorts each bucket independently. |
+
+### Go sort
+In, go you don't need to author your own sorting algorithm. You can use slices.Sort or similar.
+```go
+arr := []int{5, 3, 1, 4, 2}
+slices.Sort(arr)
+
+// OR
+
+cmp := func(a, b int) int {
+  if a == b {
+    return 0
+  } else if a > b {
+    return 1
+  }
+
+  return -1
+}
+
+slices.SortFunc(arr, cmp)
+```
 
 ### Insertion sort
 ```go
@@ -404,13 +412,13 @@ Tree traversal are types of traveling through the nodes of a tree.
 
 For example, given the following binary search tree,
 ```
-      8
-     / \
-    3   10
-   / \    \
-  1   5    14
-       \
-        7
+     8
+    / \
+   3   10
+  / \    \
+ 1   5    14
+      \
+       7
 ```
 the visits to each node would be:
 - In-order: 1 3 5 7 8 10 14
@@ -528,7 +536,6 @@ func TestHeap(t *testing.T) {
 		fmt.Printf("%d\v", heap.Pop(h))
 	}
 }
-
 ```
 
 ## Depth first search (DFS) 🔍
@@ -660,7 +667,18 @@ In DP, the formula used to tabulate, like dp[i] = dp[i - 1] + dp[i - 2], is call
 
 # Systems design 🖥️
 
-## The OSI model
+## The Internet protocol suite
+![](./plantuml/out/ip-protocol-suite/ip-protocol-suite.svg)
+
+### The reliable link layer
+
+The TCP handshake introduces a full round-trip before any app data is sent. Until a connection is opened the bandwidth is effectively zero. The faster a connection is established, the sooner communication can begin. Ergo, reducing round-trip time by moving servers next to each other reduces the cold
+start penalty.
+
+![](./plantuml/out/tcp-handshake/tcp-handshake.svg)
+
+Closing the connection, on the other hand, involves multiple round-trips. Additionally, if another connection might occur soon, it doesn't make sense to close the connection so it might stay open.
+
 
 
 ## Load balancing strategies 🔄
@@ -726,7 +744,7 @@ ChatGPT says,
 > "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
 
 ### Causal consistency
-Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that casually related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem. So, stay CALM (get it? stay calm!!? Funny.)
+Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that causally related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem quickly. So, stay CALM (Get it? Stay calm!!? About the theorem? Funny, right?)
 
 #### The CALM theorem
 The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
@@ -735,11 +753,13 @@ Logically monotonic means that the output only further refines the input and the
 
 Very important note: The consistency in CALM is not the same as the consistency in CAP.
 
-Variable assignment is non-monotonic. When you assign it something, the previous value is gone forever. Take a counter value that does
+Variable assignment is non-monotonic. When you assign something to a variable, the previous value is gone forever. Take a counter value that does
 
 write(1), write(2), write(3) => 3
 but then if they show up out of order:
 write(1), write(3), write(2) => 2
+
+We end up with the wrong value.
 
 In contrast, incrementing allows us to reorder in any way and still get the correct output:
 increment(1), increment(1), increment(1) => 3
@@ -782,7 +802,7 @@ So, while helpful, CAP is limited in its practical application. This is, again, 
 # Napkin math 🧻
 Also known as back of the envelope calculations.
 
-Note that these numbers are heavily rounded for memorizing. We want to be in the ballpark for creating useful mental models. Do some basic alegebra if you need to know that 99.9999% uptime per day could mean 90ms of downtime.
+Note that these numbers are heavily rounded for memorizing. We want to be in the ballpark for creating useful mental models.
 
 ## Costs
 Name | $/time/quantity | Description
@@ -794,18 +814,19 @@ CDN | ¢1/mo/GB | Cost in AWS or GCP for CDN storage per month per GB
 Network | ¢1/mo/GB | Networking utilization costs in AWS or GCP per month per GB
 
 ## Uptime in nines
-Obviously, zero downtime is ideal, but this ain't realistic. We want as close as possible to 100%, typically in some SLA/SLO. The nines themselves don't really tell you the actual amount of downtime allowed. What's 99.99% of 365 days? Why, it's 0.0365 days obviously! Yeah, no, still not helpful. Memorize the times.
+Obviously, zero downtime in systems is ideal, but this ain't realistic. We want as close as financially reasonable to 100% up time. The nines themselves don't really tell you the actual amount of downtime allowed. What's 99.99% of 365 days? Why, it's 0.0365 days obviously! Yeah, no, still not helpful. Memorize the times. Note that the values in the chart are intended to be "memorization friendly". You get a ballpark, gut feel from the amount of downtime being discussed. If you need perfect numbers, then actually bust out a calculator.
 
 No. of Nines | % | Annual downtime | Daily downtime
 -- | --- | --- | ---
-1.5 nines | 95% | 18 days | 75min
-2 nines | 99% | 4 days | 15min
+1 nine | 90% | 36days | 150min
+1.5 nines | 95% | 18days | 75min
+2 nines | 99% | 4days | 15min
 3 nines | 99.9% | 9hrs | 2min
-4 nines | 99.99% | 50min | 9s
-5 nines | 99.999% | 5min | 900ms
-6 nines | 99.9999% | 30sec | 90ms
+4 nines | 99.99% | 1hr | 10s
+5 nines | 99.999% | 5min | 1s
+6 nines | 99.9999% | 30sec | 100ms
 
-Also note that downtime among serial systems is typically additive because we can't assume downtime overlaps. In otherwords, two, 6-nine services in serial will not yield 6-nines because you'll have up to 1 min of downtime worst-case and 1min > 30sec. If we have a pipeline with services A -> B -> C, each service with 10 minutes of annual downtime, then it's 30 minutes of downtime total in the worst case.
+Also note that downtime among serial systems is typically additive because we can't assume downtime overlaps. In otherwords, two, 6-nine services in serial will not yield 6-nines of down time. The worst case downtime would be 1 min (1min > 30sec, so not 6 nines). If we have a pipeline with services A -> B -> C, each service with 10 minutes of annual downtime, then it's 30 minutes of downtime total, in the worst case.
 
 You may need to consider LBs+1, LBs+2, or 2*LBs. The more nines, the more expensive it is.
 
