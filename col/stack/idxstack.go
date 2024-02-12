@@ -9,6 +9,7 @@ import (
 
 type IdxStack[T any] struct {
 	conc.RWLocker
+
 	v   []T
 	idx int
 }

@@ -38,9 +38,20 @@
   - [Backtracking 🔙](#backtracking-)
   - [Graphs 📊](#graphs-)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
+  - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
 - [Systems design 🖥️](#systems-design-️)
-  - [The Internet protocol suite](#the-internet-protocol-suite)
-    - [The reliable link layer](#the-reliable-link-layer)
+  - [Communication](#communication)
+    - [The Internet protocol suite](#the-internet-protocol-suite)
+    - [Border gateway protocol (BGP)](#border-gateway-protocol-bgp)
+    - [User datagram protocol (UDP)](#user-datagram-protocol-udp)
+    - [Reliablity](#reliablity)
+      - [Opening and the TCP handshake](#opening-and-the-tcp-handshake)
+      - [Closing and the TIME\_WAIT](#closing-and-the-time_wait)
+      - [Established connections and congestion control](#established-connections-and-congestion-control)
+    - [Security](#security)
+      - [Encyption](#encyption)
+      - [Authentication and certificates](#authentication-and-certificates)
+      - [Data integrity](#data-integrity)
   - [Load balancing strategies 🔄](#load-balancing-strategies-)
     - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
     - [Load balancing failover](#load-balancing-failover)
@@ -53,6 +64,11 @@
     - [Back to causal consistency](#back-to-causal-consistency)
     - [Eventual consistency](#eventual-consistency)
     - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
+  - [Forward and reverse proxies](#forward-and-reverse-proxies)
+  - [Content delivery networks (CDN)](#content-delivery-networks-cdn)
+    - [CDN networks](#cdn-networks)
+    - [CDN caching](#cdn-caching)
+    - [Push and pull CDNs](#push-and-pull-cdns)
 - [Napkin math 🧻](#napkin-math-)
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
@@ -663,23 +679,128 @@ A problem can be solved via dynamic programming if
 
 Really, DP == DFS + memoization + pruning. Pruning is important, to save space and reduced wasted calculations.
 
-In DP, the formula used to tabulate, like dp[i] = dp[i - 1] + dp[i - 2], is called the recurrene relation and is critical.
+In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp[i - 2]`. These formulas are called the recurrene relation and is critical. Without this, you'll end up flailing around. They also, aren't super obvious. Take finding the longest increasing subsequence (LIS). The recurrence relation from top-down is `lis(i) = max(lis(i-1), lis(i-2) ... lis(0))` but only for `nums at i-1, i-2, ..., 0 < num at i`.
+
+DP problems can be solved in top-down or bottom-up.
+
+## Disjoint union set (DSU)
+
 
 # Systems design 🖥️
+[Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
 
-## The Internet protocol suite
+## Communication
+
+### The Internet protocol suite
 ![](./plantuml/out/ip-protocol-suite/ip-protocol-suite.svg)
 
-### The reliable link layer
+- The **link layer** operates on local network links like Ethernet or WiFi and provides interfaces to the underlying network hardware. Switches operate at this layer and forward Ethernet packets based on their MAC addresses.
+- The **internet layer** routes packets based on their IP address. The IP protocol is core at this layer. Packets are delivered on a best-error can can be dropped, duplicated, corrupted, or arrive out of order. Routers work at this layer, forwarding packets along based on their IP. Note that MAC addresses allow packets to be forwarded from one machine to the next. IP addresses provide the start and end machines.
+- The **transport layer** transmits data between two processes. There are many processes on a machine that want to communicate and they do so through port numbers. TCP protocol is used at this layer and attempts make a reliable channel over an unreliable one (lol). Segments are given a number which lets the receiver know if packets are dropped, duplicated, or arriving out of order.
+- The **application layer** defines the high level communications like HTTP or DNS. Often, this is the target abstraction for our work.
 
-The TCP handshake introduces a full round-trip before any app data is sent. Until a connection is opened the bandwidth is effectively zero. The faster a connection is established, the sooner communication can begin. Ergo, reducing round-trip time by moving servers next to each other reduces the cold
-start penalty.
+There are other layers: physical and data link. We'll briefly not them here:
+- Physical concerns itself with voltages, pins, cabeling, wireless frequencies, etc.
+- Data link conerns itself with providing frames for the raw bits and provides some error correction/detection.
+
+### Border gateway protocol (BGP)
+Building and communicating routing tables lies with BGP. BGP maps out routes for forwarding packets along. Note that BGP is concerned about the minimum number of "hops"; it doesn't concern itself with congestion or latency.
+
+ChatGPT says,
+> "Absolutely! Let's imagine the internet is like a big neighborhood with houses (which are computer networks) that want to talk to each other. Now, each house has its own unique address, just like how each computer network on the internet has its own address.
+
+Now, Border Gateway Protocol, or BGP, is like the system that helps these houses (networks) know how to talk to each other. Imagine if you want to send a letter to your friend's house in another part of the neighborhood. You need to know the best way to get there, right?
+
+BGP is like the map of the neighborhood for the internet. It helps all the houses (networks) figure out the best paths to reach each other. Just like how you might have different routes to get to different places in your neighborhood, BGP helps networks find the best routes to send information (like emails, pictures, or web pages) to each other.
+
+But here's the tricky part: BGP doesn't know about all the small streets and houses. It mainly knows about the big roads and major intersections (these are like the main connections between different internet providers). So, when a house wants to send something to another house, BGP helps them find the best path using these big roads.
+
+However, just like in a big neighborhood, sometimes things can change. Maybe a road is under construction, or a new road is built. BGP needs to quickly figure out these changes and update the map so that everyone can still send their information along the best paths.
+
+So, in simple terms, BGP is like the map that helps computer networks on the internet find the best paths to talk to each other, just like you finding the best way to get to your friend's house in your neighborhood."
+
+### User datagram protocol (UDP)
+An alternative to TCP is UDP, a connectionless protocol that only sends discrete packets of a limited size. It's barebones and offers no reliability guarantees. UDP bootstraps other protoocls, that want some but not all of TCP's guarantees.
+
+Online multiplayer video games or video streaming may leverage UDP. There's no value in retryin, it would only degrade the user experience.
+
+### Reliablity
+TCP uses segements (not packets) that let receivers detect missing, duplicate, corrupted, and out of order data. Each segement is associated with a timer; if a receiver does not acknowledge the segment, it is resent.
+
+Operating systems manage the **sockets** the store connection states: opening, established, closing. There are more than 3 states, but this keeps it simple.
+
+#### Opening and the TCP handshake
+The TCP handshake introduces a full round-trip before any app data is sent. Until a connection is opened the bandwidth is effectively zero. The faster a connection is established, the sooner communication can begin. Ergo, reducing round-trip time by moving servers next to each other reduces the cold start penalty.
 
 ![](./plantuml/out/tcp-handshake/tcp-handshake.svg)
 
 Closing the connection, on the other hand, involves multiple round-trips. Additionally, if another connection might occur soon, it doesn't make sense to close the connection so it might stay open.
 
+#### Closing and the TIME_WAIT
+Sockets, and the resources they consume, do not immediately close. The enter a waiting state, where late arriving segments are dropped, so that they aren't considered part of a new connection. If you try to open and close many sockets (ports) in a tight loop, you can hit resource exhaustion on ports.
 
+#### Established connections and congestion control
+Once communication is started, the sender tries to avoid bombing the receiver with a ton of data. The receiver will shoot back it's buffer size to the sender, so that it doesn't get overwhelmed. TCP is rate-limited just like rate limiting on API key or IP address.
+
+TCP will also try to avoid crushing the underlying network with a ton of traffic. The sender will hold onto a congestion window that'll track the number of segments without ackowledgement. When a segment is acknowledged, the sender can increase the traffic; when not acknowledge, the window is decreased. In fact, bandwidth can be represented by `bandwidth = window_size/round_trip_time`.
+
+### Security
+TCP/IP does nothing to secure communications. We need to secure against:
+- Spying on data (encryption)
+- Unknown or wrong sender/receiver of data (certificates)
+- Accidental or malicious changes to data (message auth code via SHA or similar)
+
+Transport layer security (TLS) swoops in, runs on top of TCP, and provides encyption, authentication, and data integrity.
+
+#### Encyption
+Encryption means that the data are obfuscated and can only be read by the receivers. When TLS starts, the server and client swap public keys for asymetric encryption. There's a really great blog on the subject [here](https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/). Once the keys are sent, both sender and receiver use symetric encryption which is faster and cheaper to minimize overhead. Note that
+- The shared keys are regenerated periodically to maintain safety.
+- Bascially all traffic should use encryption due to modern CPUs having cryptographic instructions.
+
+#### Authentication and certificates
+Even though we can secure communications, we still need to verify that the server is who it claims to be. This is done via certificates which include data about the owner, expiration, public key, and digital signature. The folks that grant certificates are called certificate authorities or CAs.
+
+Certificates need to be present in the client in the client's trusted store. A trust store, also known as the certificate store, is a repository of certificates that the client trusts.
+1. The server presents the certificate during TLS/SSL handshake
+2. The client verifies the certificates, working up the certificate chain. It'll verify the certificates are valid and not expired.
+3. The client will decide if the server is trustworthy. If not, it'll terminate the connection and/or display a warning message.
+4. If all is good, the connection may proceed.
+
+Here's an example of a certificate:
+
+```
+-----BEGIN CERTIFICATE-----
+MIIDdzCCAl+gAw (a lot more garbled text follows)...
+-----END CERTIFICATE-----
+```
+
+Key values in the certificate are:
+- **Version** of the X509 standard being used. Like version 3.
+- The unique **serial number** of the certificate.
+- The certificate authority that **issued** the certificate, aka, the issuer.
+- **Validity period** states when the certificate is valid.
+  - **Not before** some date, indicating when the certificate starts being valid
+  - **Not after** some date, indicating when the certificate stops being valid
+- **Subject** indicates which entity the certificate is issued for.
+- The **public key** associated with the certificate and can be exchanged during TLS handshake.
+- The **signature algorithm** used by the certificate authority to sign the certificate.
+- A digital **signature** used to verify the authenticity of the certificate.
+
+Now, each certificate is chained to an issuing identity, another CA, that granted the certificate. This creates a chain of certificates. The top-level, final certificate is the root CA, like Let's Encrypt.
+
+Here's an example of a website (service), intermediate, and root CA chain.
+![](./plantuml/out/certificate-chain/certificate-chain.svg)
+
+We use a chain of certificates because:
+1. It creates a hierarchy of trust. Root CAs are typically installed into a client's OS.
+2. Allows client to verify the entire chain. If any one certificate is unreliable, the whole chain is considered untrustworthy.
+3. We don't need to have 10 billion certificates stored in every client. The keys are distributed around.
+4. New intermediate CAs can be added easily, making things scale nicely.
+
+Note that a common mistake is to let the certificates expire, a single point of failure for your whole web stack's security. This'll cause all clients to not trust you. Automating certificate replacement is worth the effort at scale.
+
+#### Data integrity
+With encryption we can prevent others from reading the data. With authentication we can prove who we're talking with. However, even with all this, bits could get flipped accidentally or maliciously. A hash-based message authentication code (HMAC) is sent along during TLS. Note that TCP's checksum can fail to detect errors for 1 in 16 million to 1 in 10 billion packets. So, with packets of 1KB in size, it happens once in 16 GB to 10 TB of data transmitted.
 
 ## Load balancing strategies 🔄
 Name | Description
@@ -699,10 +820,9 @@ URL hash | Similar to source IP hash except the requested URL is used instead an
 Load balancers can make routing decisions based on information extracted from bytes in the TCP stream (transport layer 4) or from the HTTP header, cookies, or resource type (application layer 7). Note that, layer 4 vs 7 is talk here is intended to be more useful for learning than 100% accurate. It's more complicated than pick layer 4 vs 7 - done.
 
 - Layer 4 requires less computing resources as there's less protocols to process, you maybe don't have to wait for the entire packet, etc.
-
 - Layer 7 load balancing is often desired for sheer flexibility since, at layer 7, we have a full understanding of the request being made.
 
-Typically, hardware nowadays is powerful enough to make layer 7 LBs outweigh layer 4 LBs.
+Typically, besides higher flexibility, hardware nowadays is powerful enough and to make layer 7 LBs outweigh layer 4 LBs.
 
 ### Load balancing failover
 A single LB presents a single point of failure. If the single load balancer goes down, then the whole system behind it goes down as well. To maintain availability, we can have multiple load balancers in active-active or active-passive configurations.
@@ -798,6 +918,38 @@ Engineering is, in part, about tradeoffs. Distributed systems are no different. 
 - Network paritions are rare in a data center. It can certainly happen though.
 
 So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
+
+## Forward and reverse proxies
+ChatGPT says,
+> "Let's imagine you want to get a toy from a toy store, but instead of going there yourself, you send your friend to bring it back for you. In this scenario, your friend is acting like a proxy.
+
+Now, there are two types of proxies: forward proxies and reverse proxies.
+
+Forward Proxy (like your friend going to the store): Imagine you want to visit different toy stores, but you don't want the stores to know it's you every time. So, you send your friend to the stores, and your friend brings the toys back to you. The stores only see your friend, not you. This is like a forward proxy; it helps you access different things on the internet without directly interacting with them.
+
+Reverse Proxy (like a helper at the toy store): Now, let's say you go to a huge toy store, and there's a helper at the entrance. Instead of going inside to get each toy yourself, you tell the helper what you want, and the helper gets the toys for you. The helper is like a reverse proxy because it helps you get what you need from the store without you having to go all the way in. In the internet world, a reverse proxy helps websites give you the things you want (like web pages or pictures) without you directly talking to the main server.
+
+In summary, proxies are like helpers or friends that help you get things from different places, and reverse proxies specifically help websites give you what you want without you having to go to the main server every time."
+
+## Content delivery networks (CDN)
+CDNs are collections of caching servers. When clients request certain resources, like images or video, they can be served from physically close CDNs that cache the content. If the CDN doesn't have the resource, it'll request the content from the "origin server" (read: your application server) from the original URL. The resource is stashed locally and finally served to the client.
+
+### CDN networks
+The main power of CDNs isn't the caching, it's actually the CDN network itself. BGP doesn't concern itself with latencies or congestion. CDNs can exploit and optimize various techniques to increase bandwidth. They have persistent connections and optimial TCP window sizes to maximize bandwidth.
+
+Furthermore, CDN are optimized in terms of location and placement. There's a global DNS load balancing, an extension of DNS, that considers client location via IP address and returns a list of the closest clusters, network congestion, and cluster health. Next, CDNs are placed at internet exchange points, points where ISPs connect together.
+
+### CDN caching
+The top level servers in CDN are the edge servers/clusters. If content is unavailable at the edge, the edge will get the content from the origin server while leveraging the overlay network.
+
+Now, imagine there's hundreds of edge CDN servers. They could end up overwhelm origin servers (read: your servers) due to a low cache hit ratio. More edge servers, closer physically, but more misses. Less servers, further physicall, but more content hits. To alleviate this pressure on the origin servers, CDNs have intermediate cache servers with a larger amount of content.
+
+Note that CDN content is partitioned among many servers because no one computer can handle all the content. Reminder that partitioning is a core scalability pattern.
+
+### Push and pull CDNs
+Before clients can get resources from a CDN, the content needs to be delivered to the CDN somehow. And there are tradeoffs to consider.
+- Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propogated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
+- **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
 # Napkin math 🧻
 Also known as back of the envelope calculations.
