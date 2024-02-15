@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestArrays(t *testing.T) {
@@ -191,6 +193,160 @@ func TestChannelDirections(t *testing.T) {
 	sendFunc(ch, "hello")
 
 	fmt.Println(recvFunc(ch))
+}
+
+func TestSelect(t *testing.T) {
+	chan1 := make(chan string)
+	chan2 := make(chan string)
+
+	fmt.Println("starting")
+
+	go func() {
+		time.Sleep(time.Second * 5)
+		chan1 <- "one done!"
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		chan2 <- "two done!"
+	}()
+
+	for i := 0; i < 2; i++ {
+		// Select will await both values simultaneously
+		select {
+		case msg1 := <-chan1:
+			fmt.Println(msg1)
+		case msg2 := <-chan2:
+			fmt.Println(msg2)
+		}
+	}
+}
+
+func TestTimeouts(t *testing.T) {
+	chan1 := make(chan string, 1) // Buffered chan
+
+	fmt.Println("starting chan1")
+
+	go func() {
+		time.Sleep(time.Second * 5)
+		chan1 <- "one done!" // Buffered chan, non-blocking to prevent goroutine leaks in case chan is never read
+	}()
+
+	select {
+	case msg := <-chan1:
+		fmt.Println(msg)
+	case <-time.After(1 * time.Second):
+		fmt.Println("timeout on chan 1!")
+	}
+
+	chan2 := make(chan string, 1) // Buffered chan
+
+	fmt.Println("starting chan2")
+
+	go func() {
+		time.Sleep(time.Second * 1)
+		chan2 <- "one done!" // Buffered chan, non-blocking to prevent goroutine leaks in case chan is never read
+	}()
+
+	select {
+	case msg := <-chan2:
+		fmt.Println(msg)
+	case <-time.After(2 * time.Second):
+		fmt.Println("timeout on chan 2!")
+	}
+}
+
+func TestChannelRange(t *testing.T) {
+	ch := make(chan string, 5)
+	ch <- "one"
+	ch <- "two"
+	ch <- "three"
+
+	close(ch) // Closes the channel, indicates no more values will be sent
+
+	for val := range ch {
+		fmt.Println(val)
+	}
+}
+
+func TestWaitGroups(t *testing.T) {
+	longTask := func(id int) {
+		fmt.Println("Worker starting: ", id)
+		time.Sleep(1 * time.Second)
+	}
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1) // Increment the wait group counter for each goroutine launched
+
+		go func(id int) {
+			defer wg.Done()
+			longTask(id)
+		}(i)
+	}
+
+	wg.Wait() // Block until all goroutines are done
+
+	// Note: Use https://pkg.go.dev/golang.org/x/sync/errgroup or similar for error handling
+}
+
+func TestBasicRateLimiting(t *testing.T) {
+	// Basic rate limiter
+	// This mega basic rate limiter will only serve requests every 200ms.
+	// It does this by creating a ticker limiter that only unblocks every 200ms.
+	// It obviously doesn't do limiting by IP address, API key, or anything like that.
+
+	// Simulate requests are coming from our HTTP server that's receiving requests
+	requests := make(chan int, 5)
+	for i := 0; i < 5; i++ {
+		requests <- i
+	}
+	close(requests) // Close the channel, so we can iterate over it
+
+	// Create a ticker, to periodically serve requests
+	limiter := time.Tick(200 * time.Millisecond)
+
+	for req := range requests {
+		<-limiter
+		fmt.Println("basic req: ", req, time.Now())
+	}
+}
+
+func TestBurstyRateLimiting(t *testing.T) {
+	// Bursty rate limiter
+	// This also mega basic rate limiter will allow bursts of 3 requests
+	// but then rate limits down to serving requests every 200ms.
+	// Unlike the basic limiter above, this one uses a limiter time channel.
+	// It obviously doesn't do limiting by IP address, API key, or anything like that.
+
+	limiter := make(chan time.Time, 3)
+
+	for i := 0; i < 3; i++ {
+		limiter <- time.Now()
+	}
+
+	go func() {
+		// Kick off the ticker, receivers can acrue up to 3 bursty requests
+		// and then only 1 request every 200 ms.
+		for tick := range time.Tick(200 * time.Millisecond) {
+			limiter <- tick
+		}
+	}()
+
+	// Simulate requests are coming from our HTTP server that's receiving requests
+	requests := make(chan int, 10)
+	for i := 0; i < 10; i++ {
+		requests <- i
+	}
+	close(requests) // Close the channel, so we can iterate over it
+
+	// On looping thru requests, you'll immeidately get 3 requests to the burst limit,
+	// but then the limiter is drained. So, the client'll need to wait for 200ms to get another one.
+	for req := range requests {
+		<-limiter
+		fmt.Println("bursty req: ", req, time.Now())
+	}
 }
 
 func TestMaps(t *testing.T) {

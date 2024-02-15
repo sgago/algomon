@@ -38,6 +38,7 @@
   - [Backtracking 🔙](#backtracking-)
   - [Graphs 📊](#graphs-)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
+    - [Tricks](#tricks-1)
   - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
 - [Systems design 🖥️](#systems-design-️)
   - [Communication](#communication)
@@ -683,6 +684,9 @@ In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp
 
 DP problems can be solved in top-down or bottom-up.
 
+### Tricks
+- Funny thout. If a sequence length is relatively small, say 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP cause otherwise the tests will never finish lol.
+
 ## Disjoint union set (DSU)
 
 
@@ -767,7 +771,6 @@ Certificates need to be present in the client in the client's trusted store. A t
 4. If all is good, the connection may proceed.
 
 Here's an example of a certificate:
-
 ```
 -----BEGIN CERTIFICATE-----
 MIIDdzCCAl+gAw (a lot more garbled text follows)...
