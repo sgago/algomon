@@ -1,7 +1,9 @@
-# The Study Guide 📜
-- [The Study Guide 📜](#the-study-guide-)
+# The Study Guide
+Welcome to my personal study guide for leetcode problems and system design interviews.
+
+- [The Study Guide](#the-study-guide)
 - [Data structures and algorithms](#data-structures-and-algorithms)
-  - [Runtimes 🚀](#runtimes-)
+  - [Runtimes](#runtimes)
     - [Summary](#summary)
     - [O(1)](#o1)
     - [O(logN)](#ologn)
@@ -16,31 +18,33 @@
     - [O(N!)](#on-1)
     - [Amortized time complexity](#amortized-time-complexity)
     - [Tricks](#tricks)
-  - [Hash functions and hashmaps #️⃣](#hash-functions-and-hashmaps-️⃣)
+  - [Hash functions and hashmaps](#hash-functions-and-hashmaps)
     - [Common Hash Functions](#common-hash-functions)
     - [Pigeonhole principle](#pigeonhole-principle)
     - [References](#references)
-  - [Sorting 🔀](#sorting-)
+  - [Sorting](#sorting)
     - [Summary](#summary-1)
     - [Go sort](#go-sort)
     - [Insertion sort](#insertion-sort)
     - [Selection sort](#selection-sort)
     - [Bubble sort](#bubble-sort)
-  - [Trees 🌲](#trees-)
+  - [Trees](#trees)
     - [Terminology](#terminology)
     - [Binary trees](#binary-trees)
     - [Binary search trees (BST)](#binary-search-trees-bst)
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
-  - [Heaps and priority queues ⛰️](#heaps-and-priority-queues-️)
+  - [Heaps and priority queues](#heaps-and-priority-queues)
     - [Go heap](#go-heap)
-  - [Depth first search (DFS) 🔍](#depth-first-search-dfs-)
-  - [Backtracking 🔙](#backtracking-)
-  - [Graphs 📊](#graphs-)
+  - [Depth first search (DFS)](#depth-first-search-dfs)
+  - [Backtracking](#backtracking)
+  - [Graphs](#graphs)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
+    - [How to solve DP](#how-to-solve-dp)
     - [Tricks](#tricks-1)
   - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
-- [Systems design 🖥️](#systems-design-️)
+  - [Intervals](#intervals)
+- [Systems design](#systems-design)
   - [Communication](#communication)
     - [The Internet protocol suite](#the-internet-protocol-suite)
     - [Border gateway protocol (BGP)](#border-gateway-protocol-bgp)
@@ -53,9 +57,14 @@
       - [Encyption](#encyption)
       - [Authentication and certificates](#authentication-and-certificates)
       - [Data integrity](#data-integrity)
-  - [Load balancing strategies 🔄](#load-balancing-strategies-)
-    - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
-    - [Load balancing failover](#load-balancing-failover)
+    - [Discovery and DNS](#discovery-and-dns)
+  - [Scalability](#scalability)
+    - [HTTP caching](#http-caching)
+    - [Load balancing strategies](#load-balancing-strategies)
+      - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
+      - [Load balancing failover](#load-balancing-failover)
+  - [Reliability](#reliability)
+    - [Service level objectives](#service-level-objectives)
   - [Consistency Models](#consistency-models)
     - [Linearizability](#linearizability)
     - [Strong consistency](#strong-consistency)
@@ -70,10 +79,10 @@
     - [CDN networks](#cdn-networks)
     - [CDN caching](#cdn-caching)
     - [Push and pull CDNs](#push-and-pull-cdns)
-- [Napkin math 🧻](#napkin-math-)
+- [Napkin math](#napkin-math)
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
-  - [Sorting](#sorting)
+  - [Sorting](#sorting-1)
   - [Data storage](#data-storage)
   - [Networking](#networking)
   - [Computations](#computations)
@@ -83,11 +92,11 @@
   - [Storage devices](#storage-devices)
   - [Serialization](#serialization)
   - [Hashing](#hashing)
-- [General References](#general-references)
+- [General references](#general-references)
 
 # Data structures and algorithms
 
-## Runtimes 🚀
+## Runtimes
 How long an algorithm takes to run for a given input.
 Also called "time complexity".
 
@@ -220,7 +229,7 @@ smaller N terms and constants. Unlike infinity, it does not swallow up other ter
 - 3N^3 + 2N^2 + N -> N^3
 - N^2 + 2^N + N! -> N!
 
-## Hash functions and hashmaps #️⃣
+## Hash functions and hashmaps
 In short, a hash function converts arbitrary sized data into a fixed value, typically an Int32. For example, summing all integers in an arrary and mod'ing them by 100. We convert a bunch of data or text into a smaller, ergonomic number.
 
 Typically, you don't have to write hash functions from scratch outside of, say, for GetHashcode for .NET objects or similar.
@@ -248,7 +257,7 @@ Collisions are unavoidable, so we need to design around it. For example, if "ann
 ### References
 [List of hash functions](https://www.geeksforgeeks.org/hash-functions-and-list-types-of-hash-functions/)
 
-## Sorting 🔀
+## Sorting
 - Time complexity = The amount of time it takes to sort the collection as a function of the size of the input data, represented in big O notation. Basic sorting is usually N^2, advanced are usually NlogN.
 - Stablility = If two elements have equal keys, then the order of these elements remains unchanged. This can be valuable for historical data, user expectations, or multi-criteria sorts where not sorting equal elements is important.
 - In-place = The sorting algorithm sorts the input data structure without need to allocate additional memory to store the sorted results. This is valuable for large data sets.
@@ -308,7 +317,7 @@ func InsertionSort(arr []int) {
 
 ### Bubble sort
 
-## Trees 🌲
+## Trees
 Trees are a type of graph composed of nodes and edges.
 - Trees are acyclic, nodes don't loop back to themselves and create cycles.
 - There's a path from the root node to any other node.
@@ -442,7 +451,7 @@ the visits to each node would be:
 - Pre-order: 8 3 1 5 7 10 14
 - Post-order: 1 7 5 3 14 10 8
 
-## Heaps and priority queues ⛰️
+## Heaps and priority queues
 A min heap is a special tree data structure where
 1. Almost complete - every level in the tree is almost filled, except the last level. The last level is left justified.
 1. Each node has a greater key (priority) than it's parent.
@@ -555,7 +564,7 @@ func TestHeap(t *testing.T) {
 }
 ```
 
-## Depth first search (DFS) 🔍
+## Depth first search (DFS)
 A depth first search looks for solutions by going deep first. That is, it searches
 for solutions in a pre-order traversed way. Some more terminology:
 - Backtracking - returning after visiting a non-solution node
@@ -602,13 +611,13 @@ Now, sometimes, when solving DFS problems, we need to
 - Pass information about state into the recursive calls, like max value
 Alternatively, we can store state, say a max number, in a global variable.
 
-## Backtracking 🔙
+## Backtracking
 Backtracking tacks on some new concepts on top of trees and DFS.
 1. We can make the tree as we go, creating and deleting child nodes as we traverse through.
 2. We can drag state around via parameters/returns or with global/struct variables.
 3. If we get some crazy 2^N to N! memory usage with backtracking combinatorial problems, we may need to memoize intermediate solutions to cut down on memory usage. For a small to mid N, N! will kill our poor computer. Memoize typically means using a map or similar to store intermediate and final solutions to the combinatorial problems.
 
-## Graphs 📊
+## Graphs
 Trees are rooted, connected, acyclic, undirected graphs. Trees contain N nodes and N-1 edges and there are only one path between 2 nodes.
 
 This is a tree (and a graph):
@@ -684,19 +693,51 @@ In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp
 
 DP problems can be solved in top-down or bottom-up.
 
+### How to solve DP
+1. Identify if we've got overlapping problems or not. If they don't overlap, DP ain't going to work.
+2. Sometimes, they don't just hand you an array to run DP on. For example, see the [perfect squares problems](./problems/dynamic/perfectsquares_test.go). In that problem, we need to churn out the perfect squares 1, 4, 9, 16, 25, 36, etc. to get started.
+3. Half the battle is just determining what goes into the memo. For *most* problems, we memo the same thing as the problem's output. Again, DP is combining solutions to subproblems to create the final answer. Maybe this is completely obvious, but when you're staring down some crazy confusing leetcode problem for the first time, it helps to remember this.
+4. And, sometiems, you might need to sort the input collection or operate on it in some way. See the [longest divisible subset problem](./problems/dynamic/largestdivsubset_test.go). In that problem, the TC from the solution is N^2 and sorting is NlogN, so this is "fine" to do.
+5. After you identify the memo and what it stores, we can typically init the memo with the "lowest leve", basic answers. For example, in the [perfect squares problem](./problems/dynamic/perfectsquares_test.go), we can init the memo with 1, 4, 9, 25, etc. while less than our target number.
+6. Next, you'll need to figure out how to get from `dp[0]` to `dp[1]`. We start to author the recurrence relation, the math formula that get's us the answers from `something[i]` to `something[i+1]`. These don't need to be written like a math PhD would write. Something *you* can understand for coding like:
+```
+The recurrence relation is:
+memo[i] = max(memo[i-1], memo[i-2]... memo[0])+1
+  but ONLY for each memo[i-1] when nums[i]%nums[i-1]==0.
+```
+
 ### Tricks
-- Funny thout. If a sequence length is relatively small, say 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP cause otherwise the tests will never finish lol.
+- Funny thout. If a sequence length is relatively small, say under 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP because the tests will never finish otherwise.
 
 ## Disjoint union set (DSU)
 
+## Intervals
+```
+start1-----end1   // Some interval 1
 
-# Systems design 🖥️
-[Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
+    start2-----------end2    // Some other interval 2
+
+                           start3-----end3    // Yet another interval 3
+```
+We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= start1`. Notice that the formual returns false for intervals 1 and 3.
+
+# Systems design
+1. The network is reliable;
+2. Latency is zero;
+3. Bandwidth is infinite;
+4. The network is secure;
+5. Topology doesn't change;
+6. There is one administrator;
+7. Transport cost is zero;
+8. The network is homogeneous.
+From [Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
 
 ## Communication
 
 ### The Internet protocol suite
-![](./plantuml/out/ip-protocol-suite/ip-protocol-suite.svg)
+Here's a model of the abstraction layers of the internet. To be blunt, it's totally bogus. In dev, these layers will spill over or might be non-existent, but it's helpful for conceptualization.
+
+![](./diagrams/out/ip-protocol-suite/ip-protocol-suite.svg)
 
 - The **link layer** operates on local network links like Ethernet or WiFi and provides interfaces to the underlying network hardware. Switches operate at this layer and forward Ethernet packets based on their MAC addresses.
 - The **internet layer** routes packets based on their IP address. The IP protocol is core at this layer. Packets are delivered on a best-error can can be dropped, duplicated, corrupted, or arrive out of order. Routers work at this layer, forwarding packets along based on their IP. Note that MAC addresses allow packets to be forwarded from one machine to the next. IP addresses provide the start and end machines.
@@ -706,6 +747,8 @@ DP problems can be solved in top-down or bottom-up.
 There are other layers: physical and data link. We'll briefly not them here:
 - Physical concerns itself with voltages, pins, cabeling, wireless frequencies, etc.
 - Data link conerns itself with providing frames for the raw bits and provides some error correction/detection.
+
+Also, TCP is on it's way out and being replaced by [QUIC](https://en.wikipedia.org/wiki/QUIC), aka TCP/2, which multiplexes connections between two endpoints using UDP.
 
 ### Border gateway protocol (BGP)
 Building and communicating routing tables lies with BGP. BGP maps out routes for forwarding packets along. Note that BGP is concerned about the minimum number of "hops"; it doesn't concern itself with congestion or latency.
@@ -736,7 +779,7 @@ Operating systems manage the **sockets** the store connection states: opening, e
 #### Opening and the TCP handshake
 The TCP handshake introduces a full round-trip before any app data is sent. Until a connection is opened the bandwidth is effectively zero. The faster a connection is established, the sooner communication can begin. Ergo, reducing round-trip time by moving servers next to each other reduces the cold start penalty.
 
-![](./plantuml/out/tcp-handshake/tcp-handshake.svg)
+![](./diagrams/out/tcp-handshake/tcp-handshake.svg)
 
 Closing the connection, on the other hand, involves multiple round-trips. Additionally, if another connection might occur soon, it doesn't make sense to close the connection so it might stay open.
 
@@ -760,6 +803,10 @@ Transport layer security (TLS) swoops in, runs on top of TCP, and provides encyp
 Encryption means that the data are obfuscated and can only be read by the receivers. When TLS starts, the server and client swap public keys for asymetric encryption. There's a really great blog on the subject [here](https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/). Once the keys are sent, both sender and receiver use symetric encryption which is faster and cheaper to minimize overhead. Note that
 - The shared keys are regenerated periodically to maintain safety.
 - Bascially all traffic should use encryption due to modern CPUs having cryptographic instructions.
+
+Note that the TCP handshake runs first, then followed by the TLS handshake. QUIC aims to speed this along some.
+![](./diagrams/out/Tcp-vs-quic-handshake.svg)
+(Diagram by By Sedrubal - Own work, CC BY-SA 4.0, https://commons.wikimedia.org/w/index.php?curid=114587250)
 
 #### Authentication and certificates
 Even though we can secure communications, we still need to verify that the server is who it claims to be. This is done via certificates which include data about the owner, expiration, public key, and digital signature. The folks that grant certificates are called certificate authorities or CAs.
@@ -792,7 +839,7 @@ Key values in the certificate are:
 Now, each certificate is chained to an issuing identity, another CA, that granted the certificate. This creates a chain of certificates. The top-level, final certificate is the root CA, like Let's Encrypt.
 
 Here's an example of a website (service), intermediate, and root CA chain.
-![](./plantuml/out/certificate-chain/certificate-chain.svg)
+![](./diagrams/out/certificate-chain/certificate-chain.svg)
 
 We use a chain of certificates because:
 1. It creates a hierarchy of trust. Root CAs are typically installed into a client's OS.
@@ -805,7 +852,55 @@ Note that a common mistake is to let the certificates expire, a single point of 
 #### Data integrity
 With encryption we can prevent others from reading the data. With authentication we can prove who we're talking with. However, even with all this, bits could get flipped accidentally or maliciously. A hash-based message authentication code (HMAC) is sent along during TLS. Note that TCP's checksum can fail to detect errors for 1 in 16 million to 1 in 10 billion packets. So, with packets of 1KB in size, it happens once in 16 GB to 10 TB of data transmitted.
 
-## Load balancing strategies 🔄
+### Discovery and DNS
+So, IP addresses are cool and all, but we need a way to lookup the IP addresses of servers. There's 2^128 IPv6 and 2^32 IPv4 addresses. Good luck remembering them. Worse yet, IP addresses of servers change all the time. Sometimes the admins need to move requests to a different cluster or spread load among many clusters. DNS helps with this.
+
+Funnily enough, DNS is its own layer 7 protocol.
+
+Anyway, the get-ip-address-from-domain-name is done via Domain Name System (DNS) and DNS resolution.
+
+We're going from `www.amazon.com` to `192.0.2.1` in IPv4 or `2001:d68::1` in IPv6.
+
+You can, of course, slap a port and IP address into the URL bar, but that's a lot of work. Instead we can take the domain name like something.com and resolve it into its IP address 1.2.3.4.
+
+1. If it's a new domain name, the packets are routed to your ISP's DNS resolver. Your browser will cache IP addresses for domain names to save time.
+2. The ISP's resolver will iteratively resolve the hostname for clients. It will also cache results.
+3. If the ISP's resolver doesn't have it, it'll send a query to the root name server (NS). Root NS map the top-level domains (TLD) of the request, like `.com`. It'll give the address of the TLD server.
+4. Once the ISP's resolver has the `.com` part, it'll query the TLD name server with `something.com`. This is the iterative part where the ISP's name resolver will iterate a lot.
+5. The TLD name server maps `something.com` to an authorative name server responsible for the domain.
+6. We can return the IP address of `something.com` finally.
+7. If there's an optional subdomain, like `definitely.something.com`, then the name server would return the authorative name server for the subdomain and the process keeps going.
+
+Again, the results are typically cached along the way. Similar to HTTP caching, DNS results are cached with a time to live (TTL) for how long the result is valid for. And, like HTTP caching, we can get some eventual consistency problems that surface. If the cache TTL is too long, then clients will try to connect to the wrong IP address. If the cache TTL is too short, you'll increase DNS load and increase avg response times for clients due to the several round trips DNS takes.
+
+In terms of resiliency, DNS is single point of failure since normal humans simply won't find the IP address of your server and type it in to the browser URL. If, there's a failure and the TTL is stale, we could still try returning the stale result. Continuing to operate or partially operate while a dependency is down is called static stability.
+
+Note that DNS used to be in plaintext, but now it uses TLS. Yay.
+
+[This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a deep dive.
+
+## Scalability
+
+### HTTP caching
+Static resources like CSS, JS, JSON, etc. don't typically change super often. The client's browser can cache the results which boosts response time, lowers server load, etc. In terms of APIs, only reads (GET and HEAD) are cacheable. The other verbs modify data.
+
+The first time a client requests static resource, we can reply with the resource plus add a Cache-Control HTTP header with how long to keep the resource (time to live or TTL) and the ETag (resource version).
+
+![](./diagrams/out/http-cache-miss/http-cache-miss.svg)
+
+If the cache resource is stale (age > max-age), we'll request it from the server again. Otherwise, the next time the same resource is requested, we'll get it from the cache.
+
+![](./diagrams/out/http-cache-stale/http-cache-stale.svg)
+
+This is great because we simply added a HTTP header and reduced server load and boosted response time for the client. Unfortunately, we added eventual consistency, especially if the caching is poorly managed.
+
+For example, in the worst cases, say the dev team changed an endpoint with a breaking change and updated the JavaScript that hits this endpoint. If the client is still using an old JavaScript file due to improper headers/caching, they'll get an error when trying to use the endpoint with the wrong JavaScript code. This will require clients to perform a hard reload, wait for the resource to expire, or simply try again and hope that the consistency is there.
+
+Regardless, this is typically a good price to pay by being careful when using the cache, using cache-busting techniques, use CSS/JS/whatever hashcodes or versions like `<link rel="stylesheet" type="text/css" href="styles.css?hash=abcd1234">` or `<link rel="stylesheet" type="text/css" href="styles.css?v=1">`. Alternatively, we can force clients to retrieve static resources from different URLs.
+
+Note that HTTP caching treats reads separate from writes like CQRS.
+
+### Load balancing strategies
 Name | Description
 --- | ---
 Round robin | Sling requests to servers in order, one at a time. LB1 -> LB2 -> LB3 repeat.
@@ -819,7 +914,7 @@ Weighted response time | The LB can use a server's response time to decide where
 Source IP hash | The source and destination IPs are hashed and used to direct requests. This one is useful if all requests need to go to the same server.
 URL hash | Similar to source IP hash except the requested URL is used instead and helps ensure requests are sent to the same servers.
 
-### Layer 4 and 7 load balancing
+#### Layer 4 and 7 load balancing
 Load balancers can make routing decisions based on information extracted from bytes in the TCP stream (transport layer 4) or from the HTTP header, cookies, or resource type (application layer 7). Note that, layer 4 vs 7 is talk here is intended to be more useful for learning than 100% accurate. It's more complicated than pick layer 4 vs 7 - done.
 
 - Layer 4 requires less computing resources as there's less protocols to process, you maybe don't have to wait for the entire packet, etc.
@@ -827,7 +922,7 @@ Load balancers can make routing decisions based on information extracted from by
 
 Typically, besides higher flexibility, hardware nowadays is powerful enough and to make layer 7 LBs outweigh layer 4 LBs.
 
-### Load balancing failover
+#### Load balancing failover
 A single LB presents a single point of failure. If the single load balancer goes down, then the whole system behind it goes down as well. To maintain availability, we can have multiple load balancers in active-active or active-passive configurations.
 - Active-active = There are multiple, ready LBs in use. If one active goes down, then another is ready to take the additional load.
 - Active-passive = One LB is active, another LB is in standby. The standby LB is ready to hop in if the active one goes down.
@@ -837,7 +932,17 @@ The more nines you need, the more LBs you'll need to supply.
 References:
 - [Load balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques)
 
+## Reliability
+
+### Service level objectives
+| Term | Definition | Example
+| ---- | ---------- | -------
+| SLI | Service Level Indicator | A carefully defined quantitative aspect of the level of service that is being provided | Request latency in milliseconds, error rates, system throughput, etc.
+| SLO | Service Level Objective | A target or range of acceptable SLI values.
+
 ## Consistency Models
+TODO: Should consistency models be here? Is it more of a comms thing? It might be.
+
 Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
 
 ### Linearizability
@@ -954,12 +1059,12 @@ Before clients can get resources from a CDN, the content needs to be delivered t
 - Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propogated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
 - **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
-# Napkin math 🧻
-Also known as back of the envelope calculations.
-
-Note that these numbers are heavily rounded for memorizing. We want to be in the ballpark for creating useful mental models.
+# Napkin math
+Also known as back of the envelope calculations. These numbers are **heavily** rounded for memorizing. We want to be in the ballpark for creating useful mental models and to develop a gut feel for numbers being discussed to streamline conversations and make sure we've got a top-notch metnal model of what's being talked about. If you need accurate numbers, then do your Ti-83 math instead.
 
 ## Costs
+Cloud costs are important. It's good to have a sense of how much cloud computing costs will run. If we're using 400, four core CPUs per month, we want to know what that'll cost.
+
 Name | $/time/quantity | Description
 --- | --- | ---
 Core | $10/mo/core | Cost of cloud computing cores per month (typically have many)
@@ -969,21 +1074,21 @@ CDN | ¢1/mo/GB | Cost in AWS or GCP for CDN storage per month per GB
 Network | ¢1/mo/GB | Networking utilization costs in AWS or GCP per month per GB
 
 ## Uptime in nines
-Obviously, zero downtime in systems is ideal, but this ain't realistic. We want as close as financially reasonable to 100% up time. The nines themselves don't really tell you the actual amount of downtime allowed. What's 99.99% of 365 days? Why, it's 0.0365 days obviously! Yeah, no, still not helpful. Memorize the times. Note that the values in the chart are intended to be "memorization friendly". You get a ballpark, gut feel from the amount of downtime being discussed. If you need perfect numbers, then actually bust out a calculator.
+Obviously, zero downtime in systems is ideal, but this ain't realistic. We want to be as close as financially reasonable to 100% up time. We talk about this using the "number of nines". The nines themselves don't really tell you the actual amount of downtime allowed. For example, what's 4 nines (99.99%) of 365 days? Why, it's 0.0365 days obviously! Yeah, no, still not helpful. Memorize the times.
 
-No. of Nines | % | Annual downtime | Daily downtime
--- | --- | --- | ---
-1 nine | 90% | 36days | 150min
-1.5 nines | 95% | 18days | 75min
-2 nines | 99% | 4days | 15min
-3 nines | 99.9% | 9hrs | 2min
-4 nines | 99.99% | 1hr | 10s
-5 nines | 99.999% | 5min | 1s
-6 nines | 99.9999% | 30sec | 100ms
+| No. of Nines | %        | Daily downtime | Annual downtime |
+|--------------|----------|----------------|-----------------|
+| 1 nine       | 90%      | 150min         | 36days          |
+| 1.5 nines    | 95%      | 75min          | 18days          |
+| 2 nines      | 99%      | 15min          | 4days           |
+| 3 nines      | 99.9%    | 2min           | 9hrs            |
+| 4 nines      | 99.99%   | 10s            | 1hr             |
+| 5 nines      | 99.999%  | 1s             | 5min            |
+| 6 nines      | 99.9999% | 100ms          | 30sec           |
 
-Also note that downtime among serial systems is typically additive because we can't assume downtime overlaps. In otherwords, two, 6-nine services in serial will not yield 6-nines of down time. The worst case downtime would be 1 min (1min > 30sec, so not 6 nines). If we have a pipeline with services A -> B -> C, each service with 10 minutes of annual downtime, then it's 30 minutes of downtime total, in the worst case.
+Also note that downtime among serial systems is typically additive. Say we've get two services named A and B where A depends on B. If they both have 5 nines of uptime, then they could both be down for 1s per day but there's no guarantee these times overlap. So, the worst case is going to be 2 services * 1s of downtime = 2s of downtime.
 
-You may need to consider LBs+1, LBs+2, or 2*LBs. The more nines, the more expensive it is.
+The more nines, the more expensive it is. For example, in terms of load balancers (LB), you may need to consider LBs+1, LBs+2, or 2*LBs to get your desire uptime.
 
 ## Sorting
 We need to memorize a basic sorting algorithm, like insertion sort:
@@ -1017,5 +1122,7 @@ func InsertionSort(arr []int) {
 
 ## Hashing
 
-# General References
-- [System design primer on GitHub](https://github.com/donnemartin/system-design-primer)
+# General references
+- [Understanding Distributed Systems](https://understandingdistributed.systems/) is a really great book on the topic and worth a deep dive. The references are all free or easy to access and worth deep-diving on too.
+- [System design primer on GitHub](https://github.com/donnemartin/system-design-primer).
+- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) from Google.
