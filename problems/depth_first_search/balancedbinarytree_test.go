@@ -1,4 +1,4 @@
-package dfs
+package depthfirstsearch
 
 import (
 	"fmt"

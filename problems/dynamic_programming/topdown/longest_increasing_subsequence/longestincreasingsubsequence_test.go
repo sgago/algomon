@@ -3,8 +3,6 @@ package dynamic
 import (
 	"fmt"
 	"testing"
-
-	mstack "github.com/sgago/algomon/col/monotonic/stack"
 )
 
 /*
@@ -79,40 +77,12 @@ func LisBrute(nums []int) int {
 	return m
 }
 
-func TestLisDp(t *testing.T) {
-	dp := LisDp([]int{1, 2, 4, 3})
-	fmt.Println(dp)
-}
-
-func LisDp(nums []int) int {
-	dp := make([]int, len(nums)+1) // Create memo, with +1 for init cond
-	// dp[0] = 0 // It's zero by default, but our memo's init cond is 0
-	lis := 0
-
-	for i := 1; i < len(nums); i++ {
-		ni := nums[i-1]
-		dp[i] = 1 // Any number is at least 1 or dp[0]+1==1
-
-		for j := 1; j < i; j++ {
-			nj := nums[j-1]
-
-			if nj < ni {
-				dp[i] = max(dp[i], dp[j]+1)
-			}
-		}
-
-		lis = max(lis, dp[i])
-	}
-
-	return lis
-}
-
-func TestLisDfs(t *testing.T) {
-	dfs := LisDfs([]int{0, 1, 3, 2, 4, 5, -1, 0, 3})
+func TestLongestIncreasingSubsequence(t *testing.T) {
+	dfs := LongestIncreasingSubsequence([]int{0, 1, 3, 2, 4, 5, -1, 0, 3})
 	fmt.Println(dfs)
 }
 
-func LisDfs(nums []int) int {
+func LongestIncreasingSubsequence(nums []int) int {
 	if len(nums) <= 1 {
 		return len(nums)
 	}
@@ -120,12 +90,12 @@ func LisDfs(nums []int) int {
 	memo := make(map[int]int)
 	memo[0] = 1
 
-	dfs := lisDfs(nums, len(nums)-1, memo)
+	lis := lis(nums, len(nums)-1, memo)
 
-	return dfs
+	return lis
 }
 
-func lisDfs(nums []int, idx int, memo map[int]int) int {
+func lis(nums []int, idx int, memo map[int]int) int {
 	if num, ok := memo[idx]; ok {
 		return num // Already computed, return result
 	}
@@ -135,29 +105,16 @@ func lisDfs(nums []int, idx int, memo map[int]int) int {
 		We'll need to list out preciesly how to calculate a subproblem from other subproblems.
 		f(4) = max(nums[i]...), but only for nums < nums[4], where i < 4
 	*/
-
-	lis := 1
+	length := 1
 	memo[idx] = 1 // Begin a new LIS
 
 	for j := 1; j < idx; j++ {
-		memo[j] = lisDfs(nums, j, memo)
+		memo[j] = lis(nums, j, memo)
 
 		if nums[j-1] < nums[idx] {
-			lis = max(lis, memo[j]+1)
+			length = max(length, memo[j]+1)
 		}
 	}
 
-	return lis
-}
-
-func TestLisMonotonic(t *testing.T) {
-	s := mstack.New[int](10)
-
-	lis := 0
-
-	for _, num := range []int{0, 1, 3, 2, 4, 5, -1, 0, 3} {
-		lis = max(lis, len(s.Push(num))+s.Len()-1)
-	}
-
-	fmt.Println(lis)
+	return length
 }

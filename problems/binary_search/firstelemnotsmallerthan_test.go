@@ -25,7 +25,7 @@ Input:
 Explanation: the first element larger than 6 is 7 which has index 3.
 */
 
-package binary
+package binarysearch
 
 import (
 	"testing"

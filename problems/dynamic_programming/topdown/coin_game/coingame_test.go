@@ -1,4 +1,4 @@
-package dynamic
+package coingame
 
 import (
 	"fmt"
@@ -70,14 +70,14 @@ import (
 	Unsure how to represent this in perfect math terms...
 */
 
-func TestCoinGameDfs(t *testing.T) {
+func TestCoinGame(t *testing.T) {
 	coins := []int{4, 4, 9, 4, 4}
 
-	result := CoinGameDfs(coins)
+	result := CoinGame(coins)
 	fmt.Println("score:", result)
 }
 
-type stateDfs struct {
+type state struct {
 	total    int
 	leftIdx  int
 	rightIdx int
@@ -85,8 +85,8 @@ type stateDfs struct {
 }
 
 // This is like a 2^N solution. We need a different approach to get to N^2.
-func CoinGameDfs(coins []int) int {
-	q := queue.New[stateDfs](4, stateDfs{
+func CoinGame(coins []int) int {
+	q := queue.New[state](4, state{
 		total:    0,
 		leftIdx:  0,
 		rightIdx: len(coins) - 1,
@@ -106,13 +106,13 @@ func CoinGameDfs(coins []int) int {
 			// Our turn!
 			if curr.rightIdx-curr.leftIdx > 0 {
 				q.EnqHead(
-					stateDfs{
+					state{
 						total:    curr.total + coins[curr.leftIdx],
 						leftIdx:  curr.leftIdx + 1,
 						rightIdx: curr.rightIdx,
 						turn:     !curr.turn,
 					},
-					stateDfs{
+					state{
 						total:    curr.total + coins[curr.rightIdx],
 						leftIdx:  curr.leftIdx,
 						rightIdx: curr.rightIdx - 1,
@@ -128,14 +128,14 @@ func CoinGameDfs(coins []int) int {
 			if curr.rightIdx-curr.leftIdx > 0 {
 				// Enemy does not want to see *both*, they pick the optimal, max choice
 				if coins[curr.leftIdx] >= coins[curr.rightIdx] {
-					q.EnqHead(stateDfs{
+					q.EnqHead(state{
 						total:    curr.total,
 						leftIdx:  curr.leftIdx + 1,
 						rightIdx: curr.rightIdx,
 						turn:     !curr.turn,
 					})
 				} else {
-					q.EnqHead(stateDfs{
+					q.EnqHead(state{
 						total:    curr.total,
 						leftIdx:  curr.leftIdx,
 						rightIdx: curr.rightIdx - 1,
@@ -150,17 +150,4 @@ func CoinGameDfs(coins []int) int {
 	}
 
 	return score
-}
-
-func TestCoinGameDp(t *testing.T) {
-
-}
-
-func CoinGameDp(t *testing.T) {
-	// 1. Define problem. We're playing coin game -> pick coins maxing our score and mining opponents
-	// 2. Identify the substates. The set of params that change as the problem progresses.
-	//    For the coin game, this is left index, right index, score, and turn. We could also sum the total and subtract for that to determine remaining.
-	// 3. Define the base case. Mmk, so:
-	//    Pick -> max(coins[l], coins[r])
-	//    Opponent ->
 }

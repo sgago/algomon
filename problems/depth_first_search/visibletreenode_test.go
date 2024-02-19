@@ -1,26 +1,4 @@
-/*
-Visible Tree Node
-https://algo.monster/problems/visible_tree_node
-
-In a binary tree, a node is labeled as "visible" if,
-on the path from the root to that node,
-there isn't any node with a value higher than this node's value.
-
-Input:
-    5
-   / \
-  4   6
- / \
-3   8
-
-Output:
-There are 3 visible nodes: 5, 6, 8.
-
-The root is always "visible" since there are no other nodes between the root and itself.
-Given a binary tree, count the number of "visible" nodes.
-*/
-
-package dfs
+package depthfirstsearch
 
 import (
 	"math"
@@ -29,6 +7,28 @@ import (
 	"github.com/sgago/algomon/col/node/binary"
 	"github.com/sgago/algomon/col/tree/bst"
 )
+
+/*
+	Visible Tree Node
+	https://algo.monster/problems/visible_tree_node
+
+	In a binary tree, a node is labeled as "visible" if,
+	on the path from the root to that node,
+	there isn't any node with a value higher than this node's value.
+
+	Input:
+		5
+	/ \
+	4   6
+	/ \
+	3   8
+
+	Output:
+	There are 3 visible nodes: 5, 6, 8.
+
+	The root is always "visible" since there are no other nodes between the root and itself.
+	Given a binary tree, count the number of "visible" nodes.
+*/
 
 func TestVisibleNodes(t *testing.T) {
 	tree := bst.New(2, 1, 3)

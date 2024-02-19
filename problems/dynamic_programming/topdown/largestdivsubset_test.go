@@ -8,7 +8,7 @@ import (
 )
 
 /*
-	Largest Divisible Subset
+	Largest Divisible Subset (LDS)
 	https://algo.monster/problems/largest_divisible_subset
 
 	Mmk, look out cause crunching the recurrence relation is going
@@ -90,17 +90,17 @@ import (
 
 func TestLds123(t *testing.T) {
 	nums := []int{1, 2, 3}
-	actual := lds(nums)
+	actual := largestDivisibleSubset(nums)
 	assert.Equal(t, 2, actual)
 }
 
 func TestLds1248(t *testing.T) {
 	nums := []int{1, 2, 4, 8}
-	actual := lds(nums)
+	actual := largestDivisibleSubset(nums)
 	assert.Equal(t, 4, actual)
 }
 
-func lds(nums []int) int {
+func largestDivisibleSubset(nums []int) int {
 	if len(nums) <= 1 {
 		return len(nums)
 	}

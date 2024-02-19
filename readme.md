@@ -61,26 +61,27 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [Application programming interfaces](#application-programming-interfaces)
       - [Synchronous responses](#synchronous-responses)
       - [Asynchronous responses](#asynchronous-responses)
-  - [Replication](#replication)
-    - [Consistency Models](#consistency-models)
-      - [Linearizability](#linearizability)
-      - [Strong consistency](#strong-consistency)
-      - [Sequential consistency](#sequential-consistency)
-      - [Causal consistency](#causal-consistency)
-        - [The CALM theorem](#the-calm-theorem)
-      - [Back to causal consistency](#back-to-causal-consistency)
-      - [Eventual consistency](#eventual-consistency)
-    - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
   - [Scalability](#scalability)
+    - [Replication](#replication)
+      - [Consistency models](#consistency-models)
+        - [Linearizability](#linearizability)
+      - [Strong consistency](#strong-consistency)
+        - [Sequential consistency](#sequential-consistency)
+        - [Causal consistency](#causal-consistency)
+          - [The CALM theorem](#the-calm-theorem)
+        - [Back to causal consistency](#back-to-causal-consistency)
+        - [Eventual consistency](#eventual-consistency)
+    - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
     - [HTTP caching](#http-caching)
-    - [Load balancing strategies](#load-balancing-strategies)
+    - [Load balancing](#load-balancing)
+      - [Load balancing strategies](#load-balancing-strategies)
       - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
       - [Load balancing failover](#load-balancing-failover)
-  - [Forward and reverse proxies](#forward-and-reverse-proxies)
-  - [Content delivery networks (CDN)](#content-delivery-networks-cdn)
-    - [CDN networks](#cdn-networks)
-    - [CDN caching](#cdn-caching)
-    - [Push and pull CDNs](#push-and-pull-cdns)
+    - [Forward and reverse proxies](#forward-and-reverse-proxies)
+    - [Content delivery networks (CDN)](#content-delivery-networks-cdn)
+      - [CDN networks](#cdn-networks)
+      - [CDN caching](#cdn-caching)
+      - [Push and pull CDNs](#push-and-pull-cdns)
   - [Reliability](#reliability)
     - [Service level terminology](#service-level-terminology)
 - [Napkin math](#napkin-math)
@@ -903,14 +904,14 @@ The server receives a request, does some processing, and returns the entire resp
 #### Asynchronous responses
 Similar to synchronus, the server receives a request, initiates processing, but only returns paritial or intermediate results. Clients will need to checkback later to determine when processing is completed and where to get the results. This is appropriate for long running processes greater than ~60s or those with greater than ~10MB of data may benefit from this. Clients may be able to poll the processing status or they could provide a postback for the server to call later.
 
-## Replication
+## Scalability
 
-### Consistency Models
-TODO: Should consistency models be here? Is it more of a comms thing? It might be.
-
+### Replication
 Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
 
-#### Linearizability
+#### Consistency models
+
+##### Linearizability
 Also known as atomic consistency. This is a specific form of strong consistency which adds real-time ordering constraints to operations.
 - At some point, the operation appears to occur instantly, called the linearization point.
 - This is a stronger form of consistency than strong (lol, great, not confusing at all) due to the stringent ordering.
@@ -928,7 +929,7 @@ Strong consistency ensures all nodes have the same view of data at any given tim
 ChatGPT says,
 > "Strong consistency is like having a rule that everyone, including friends in different rooms, always has the same information at the same time. If you say something to Alice, all your friends instantly know about it. It's like the information spreads quickly to everyone."
 
-#### Sequential consistency
+##### Sequential consistency
 Sequential consistency ensures operations occur in the same order for observers but does not make any real-time guarantees about when an operation's side effect becomes visible. There's a boost in performance but we drop some consistency on the ground. A read from Server A may appear different than Server B, but the operations are sequential so Server A and B will eventually converge and agree. In other words, the replicas are diverging on their view of the world.
 
 A producer/consumer system, synchronized with a message queue, is an example of a sequential concistency. The consumer lags behind the producer.
@@ -936,10 +937,10 @@ A producer/consumer system, synchronized with a message queue, is an example of 
 ChatGPT says,
 > "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
 
-#### Causal consistency
+##### Causal consistency
 Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that causally related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem quickly. So, stay CALM (Get it? Stay calm!!? About the theorem? Funny, right?)
 
-##### The CALM theorem
+###### The CALM theorem
 The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
 
 Logically monotonic means that the output only further refines the input and there's no taking back any prior input.
@@ -957,7 +958,7 @@ We end up with the wrong value.
 In contrast, incrementing allows us to reorder in any way and still get the correct output:
 increment(1), increment(1), increment(1) => 3
 
-#### Back to causal consistency
+##### Back to causal consistency
 Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
 - It's consistent "enough" and easier to work on the eventual consistency.
 - Allows building a system that's available and partition tolerant.
@@ -971,7 +972,7 @@ Causal systems are typically backed by conflict-free replicated data types (CRDT
 ChatGPT says,
 > "With causal consistency, you and your friends agree on some logical order for the messages. If you tell something important to Alice and then mention it to Bob, everyone knows that Alice got the message first. It's about maintaining the cause-and-effect relationship."
 
-#### Eventual consistency
+##### Eventual consistency
 Eventual consistency relaxes guarantees of strong and sequential. Given enough time, all nodes will converge to the same result. Note that, during updates or partitions, nodes may have different values. For example, reading from Server A and B may yield a stale, earlier result which is very confusing.
 
 Imagine uploading an image to a social network and add it to gallery. Except, when you try to view the gallery, you get a 404; strangely, you already received a message upload success message! Very odd to an observer, but very real in distributed world.
@@ -992,8 +993,6 @@ Engineering is, in part, about tradeoffs. Distributed systems are no different. 
 
 So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
 
-## Scalability
-
 ### HTTP caching
 Static resources like CSS, JS, JSON, etc. don't typically change super often. The client's browser can cache the results which boosts response time, lowers server load, etc. In terms of APIs, only reads (GET and HEAD) are cacheable. The other verbs modify data.
 
@@ -1013,7 +1012,9 @@ Regardless, this is typically a good price to pay by being careful when using th
 
 Note that HTTP caching treats reads separate from writes like CQRS.
 
-### Load balancing strategies
+### Load balancing
+
+#### Load balancing strategies
 Name | Description
 --- | ---
 Round robin | Sling requests to servers in order, one at a time. LB1 -> LB2 -> LB3 repeat.
@@ -1045,7 +1046,7 @@ The more nines you need, the more LBs you'll need to supply.
 References:
 - [Load balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques)
 
-## Forward and reverse proxies
+### Forward and reverse proxies
 ChatGPT says,
 > "Let's imagine you want to get a toy from a toy store, but instead of going there yourself, you send your friend to bring it back for you. In this scenario, your friend is acting like a proxy.
 
@@ -1057,22 +1058,22 @@ Reverse Proxy (like a helper at the toy store): Now, let's say you go to a huge 
 
 In summary, proxies are like helpers or friends that help you get things from different places, and reverse proxies specifically help websites give you what you want without you having to go to the main server every time."
 
-## Content delivery networks (CDN)
+### Content delivery networks (CDN)
 CDNs are collections of caching servers. When clients request certain resources, like images or video, they can be served from physically close CDNs that cache the content. If the CDN doesn't have the resource, it'll request the content from the "origin server" (read: your application server) from the original URL. The resource is stashed locally and finally served to the client.
 
-### CDN networks
+#### CDN networks
 The main power of CDNs isn't the caching, it's actually the CDN network itself. BGP doesn't concern itself with latencies or congestion. CDNs can exploit and optimize various techniques to increase bandwidth. They have persistent connections and optimial TCP window sizes to maximize bandwidth.
 
 Furthermore, CDN are optimized in terms of location and placement. There's a global DNS load balancing, an extension of DNS, that considers client location via IP address and returns a list of the closest clusters, network congestion, and cluster health. Next, CDNs are placed at internet exchange points, points where ISPs connect together.
 
-### CDN caching
+#### CDN caching
 The top level servers in CDN are the edge servers/clusters. If content is unavailable at the edge, the edge will get the content from the origin server while leveraging the overlay network.
 
 Now, imagine there's hundreds of edge CDN servers. They could end up overwhelm origin servers (read: your servers) due to a low cache hit ratio. More edge servers, closer physically, but more misses. Less servers, further physicall, but more content hits. To alleviate this pressure on the origin servers, CDNs have intermediate cache servers with a larger amount of content.
 
 Note that CDN content is partitioned among many servers because no one computer can handle all the content. Reminder that partitioning is a core scalability pattern.
 
-### Push and pull CDNs
+#### Push and pull CDNs
 Before clients can get resources from a CDN, the content needs to be delivered to the CDN somehow. And there are tradeoffs to consider.
 - Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propogated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
 - **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.

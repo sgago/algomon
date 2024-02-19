@@ -1,4 +1,4 @@
-package dynamic
+package longest_common_subsequence
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 /*
-	Longest common subsequence
+	Longest common subsequence (LCS)
 	https://algo.monster/problems/longest_common_subsequence
 
 	Our memo could be a 2D array. We usually memo the same
@@ -26,28 +26,28 @@ import (
 	aace?
 */
 
-func TestLcsBfsWithMemo(t *testing.T) {
+func TestLcsWithMemo(t *testing.T) {
 	word1, word2 := "aabcae", "ace"
 
 	actual := lcsBfsWithMemo(word1, word2)
 	fmt.Println("lcs:", actual)
 }
 
-type stateLcs struct {
+type state struct {
 	i   int
 	j   int
 	len int
 }
 
 func lcsBfsWithMemo(w1, w2 string) int {
-	q := queue.New[stateLcs](100)
+	q := queue.New[state](100)
 
 	memo := make([][]int, len(w1))
 	for i := 0; i < len(w1); i++ {
 		memo[i] = make([]int, len(w2))
 	}
 
-	q.EnqTail(stateLcs{
+	q.EnqTail(state{
 		i:   -1,
 		j:   0,
 		len: -1,
@@ -86,7 +86,7 @@ func lcsBfsWithMemo(w1, w2 string) int {
 
 			memo[nextI][j] = nextLen
 
-			q.EnqTail(stateLcs{
+			q.EnqTail(state{
 				i:   nextI,
 				j:   j,
 				len: nextLen,
