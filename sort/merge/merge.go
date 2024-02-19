@@ -1,8 +1,8 @@
 package merge
 
-import "github.com/sgago/algomon/comp"
+import "github.com/sgago/algomon/cmp"
 
-func Sort[T comp.Types](arr *[]T) {
+func Sort[T cmp.Types](arr *[]T) {
 	SortFunc[T](arr, func(i, j T) bool { return i < j })
 }
 

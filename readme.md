@@ -34,9 +34,9 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [Binary search trees (BST)](#binary-search-trees-bst)
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
-  - [Heaps and priority queues](#heaps-and-priority-queues)
+  - [Heaps](#heaps)
     - [Go heap](#go-heap)
-  - [Depth first search (DFS)](#depth-first-search-dfs)
+  - [Depth first search](#depth-first-search)
   - [Backtracking](#backtracking)
   - [Graphs](#graphs)
   - [Dynamic programming (DP)](#dynamic-programming-dp)
@@ -109,23 +109,23 @@ How long an algorithm takes to run for a given input. Also called "time complexi
 ### Summary
 Runtime | Name | Example
 --- | --- | --- 
-O(1) | Constant | Math, assignments
-O(alpha(N)) | Inverse Ackerman | Rare. Close to constant time; think O(4) at most. Appears is Disjointed Set Union.
-O(logN) | Log | Binary search, binary search tree search
-O(KlogN) | K linear | K binary searches
-O(N) | Linear | Traverse array, tree traversal
-O(KN) | K Linear | Performing a linear operation K times
-O(N + M) | Linear NM | Traverse array, tree traversal on two separate collections
-O(|V| + |E|) | Graph | Traverse graph with V vertices and E edges
-O(NlogN) | Sort | Quick and merge sort, divide n' conquer
-O(N^2) | Quadratic | Nested loops
-O(2^N) | Exponential | Combinatorial, backtracking, permutations
-O(N!) | Factorial | Combinatorial, backtracking, permutations
-Amoritized | Amoritized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
+`O(1)` | Constant | Math, assignments
+`O(alpha(N))` | Inverse Ackerman | Rare. Close to constant time; think O(4) at most. Appears is Disjointed Set Union.
+`O(logN)` | Log | Binary search, binary search tree search
+`O(KlogN)` | K linear | K binary searches
+`O(N)` | Linear | Traverse array, tree traversal
+`O(KN)` | K Linear | Performing a linear operation K times
+`O(N + M)` | Linear NM | Traverse array, tree traversal on two separate collections
+`O(|V| + |E|)` | Graph | Traverse graph with V vertices and E edges
+`O(NlogN)` | Sort | Quick and merge sort, divide n' conquer
+`O(N^2)` | Quadratic | Nested loops
+`O(2^N)` | Exponential | Combinatorial, backtracking, permutations
+`O(N!)` | Factorial | Combinatorial, backtracking, permutations
+`Amoritized` | Amoritized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
 
 ### O(1)
 Constant time. A constant set of of operations.
-- Hashmap lookups due to magic pointer arithmetic
+- Hashmap lookups due to pointer arithmetic magic
 - Array access
 - Math and assignments
 - Pushing and popping from a stack
@@ -286,7 +286,7 @@ A summary of common algorithms, courtesy of ChatGPT.
 | Bucket Sort          | O(n^2) (worst case)           | Yes      | No       | Yes       | Yes             | Distributes elements into buckets and sorts each bucket independently. |
 
 ### Go sort
-In, go you don't need to author your own sorting algorithm. You can use slices.Sort or similar.
+We don't typically author sort algorithms from scratch in production. Some computer scientist has implemented pattern defeating quick sort (pdqsort) for us so that we don't have to. In go, use `slices.Sort` or similar:
 ```go
 arr := []int{5, 3, 1, 4, 2}
 slices.Sort(arr)
@@ -457,7 +457,7 @@ the visits to each node would be:
 - Pre-order: 8 3 1 5 7 10 14
 - Post-order: 1 7 5 3 14 10 8
 
-## Heaps and priority queues
+## Heaps
 A min heap is a special tree data structure where
 1. Almost complete - every level in the tree is almost filled, except the last level. The last level is left justified.
 1. Each node has a greater key (priority) than it's parent.
@@ -507,6 +507,7 @@ Also, not a heap:
 ```
 
 Couple notes:
+- Priority queue is an abstraction over a heap, minheap and maxheap are the concrete implementations.
 - Max heaps are the same, but we just change the each-child-key-is-greater property to each child is less.
 - Usually, heaps are binary tree, but you can also get k-ary heaps or k-heaps.
 - A priority queue is an abstraction on the heap, a min/max heap is the concrete implementation.
@@ -521,8 +522,8 @@ Heaps support three main operations:
 In it's use, it's sort of like a stack. Push nodes in, pop nodes out except you always get the min keyed node.
 
 ### Go heap
-We don't have to author a heap from scratch.
-In go, we can use the alias a slice type and implement heap.Interface on it:
+Like sorting, we don't have to author heaps from scratch in go.
+For example, we can alias a slice type and implement heap.Interface on it:
 ```go
 // Alias a slice type
 type MinHeap []int
@@ -570,9 +571,8 @@ func TestHeap(t *testing.T) {
 }
 ```
 
-## Depth first search (DFS)
-A depth first search looks for solutions by going deep first. That is, it searches
-for solutions in a pre-order traversed way. Some more terminology:
+## Depth first search
+A depth first search (DFS) looks for solutions by going deep first. That is, it searches for solutions in a pre-order traversed way. Some more terminology:
 - Backtracking - returning after visiting a non-solution node
 - Divide and conqueror - When we have two or more recursive calls, that splits our issue into subproblems, like O(logN).
 
@@ -651,7 +651,6 @@ Trees and graphs have different terminology
 - Edges can be directed or undirected. Usually the edges are undirected.
 - Paths are sequences of verticies. Cycles start and end at the same vertex.
 - A connected graph means every vertex is joined by a path to a vertex; otherwise, the graph is disconnected.
-
 
 Typically, graphs are stored via adjaceny lists or maps. For example, this graph
 ```
@@ -741,6 +740,7 @@ We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= star
 From [Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
 
 ## Communication
+[Top](#the-study-guide)
 
 ### The Internet protocol suite
 Here's a model of the abstraction layers of the internet. To be blunt, these layer models are totally bogus; however, they are helpful for conceptualizing the layers of abstraction in Internet communications.
@@ -1013,6 +1013,7 @@ Regardless, this is typically a good price to pay by being careful when using th
 Note that HTTP caching treats reads separate from writes like CQRS.
 
 ### Load balancing
+[Top](#the-study-guide)
 
 #### Load balancing strategies
 Name | Description
@@ -1079,6 +1080,7 @@ Before clients can get resources from a CDN, the content needs to be delivered t
 - **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
 ## Reliability
+[Top](#the-study-guide)
 
 ### Service level terminology
 | Abreviation | Term | Definition | Example

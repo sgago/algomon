@@ -1,9 +1,9 @@
 package heap
 
 import (
+	"cmp"
 	"fmt"
 
-	"github.com/sgago/algomon/comp"
 	"github.com/sgago/algomon/sliceutil"
 )
 
@@ -12,7 +12,7 @@ type Heap[T any] struct {
 	less func(i, j T) bool
 }
 
-func New[T comp.Types](cap int, vals ...T) *Heap[T] {
+func New[T cmp.Ordered](cap int, vals ...T) *Heap[T] {
 	return NewFunc[T](cap, func(i, j T) bool { return i < j }, vals...)
 }
 

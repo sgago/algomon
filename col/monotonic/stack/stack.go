@@ -3,8 +3,8 @@ package stack
 import (
 	"fmt"
 
+	"github.com/sgago/algomon/cmp"
 	"github.com/sgago/algomon/col/conc"
-	"github.com/sgago/algomon/comp"
 )
 
 type Stack[T any] struct {
@@ -15,7 +15,7 @@ type Stack[T any] struct {
 	less func(a, b T) bool
 }
 
-func New[T comp.Types](cap int) *Stack[T] {
+func New[T cmp.Types](cap int) *Stack[T] {
 	s := &Stack[T]{
 		v:    make([]T, cap),
 		idx:  -1,

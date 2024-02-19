@@ -1,4 +1,4 @@
-package comp
+package cmp
 
 type Types interface {
 	~int |

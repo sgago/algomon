@@ -1,12 +1,12 @@
 package insertion
 
 import (
-	"github.com/sgago/algomon/comp"
+	"github.com/sgago/algomon/cmp"
 	"github.com/sgago/algomon/sliceutil"
 )
 
 // Sort a collection via insertion sort.
-func Sort[T comp.Types](arr []T) {
+func Sort[T cmp.Types](arr []T) {
 	SortFunc[T](arr, func(i, j T) bool { return i < j })
 }
 
