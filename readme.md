@@ -1,5 +1,5 @@
 # The Study Guide
-Welcome to my personal study guide for leetcode problems and system design interviews.
+Welcome to my personal study guide for leetcode problems and systems design.
 
 - [The Study Guide](#the-study-guide)
 - [Data structures and algorithms](#data-structures-and-algorithms)
@@ -49,36 +49,40 @@ Welcome to my personal study guide for leetcode problems and system design inter
     - [The Internet protocol suite](#the-internet-protocol-suite)
     - [Border gateway protocol (BGP)](#border-gateway-protocol-bgp)
     - [User datagram protocol (UDP)](#user-datagram-protocol-udp)
-    - [Reliablity](#reliablity)
+    - [Reliable communications](#reliable-communications)
       - [Opening and the TCP handshake](#opening-and-the-tcp-handshake)
       - [Closing and the TIME\_WAIT](#closing-and-the-time_wait)
       - [Established connections and congestion control](#established-connections-and-congestion-control)
-    - [Security](#security)
+    - [Secure communications](#secure-communications)
       - [Encyption](#encyption)
       - [Authentication and certificates](#authentication-and-certificates)
       - [Data integrity](#data-integrity)
     - [Discovery and DNS](#discovery-and-dns)
+    - [Application programming interfaces](#application-programming-interfaces)
+      - [Synchronous responses](#synchronous-responses)
+      - [Asynchronous responses](#asynchronous-responses)
+  - [Replication](#replication)
+    - [Consistency Models](#consistency-models)
+      - [Linearizability](#linearizability)
+      - [Strong consistency](#strong-consistency)
+      - [Sequential consistency](#sequential-consistency)
+      - [Causal consistency](#causal-consistency)
+        - [The CALM theorem](#the-calm-theorem)
+      - [Back to causal consistency](#back-to-causal-consistency)
+      - [Eventual consistency](#eventual-consistency)
+    - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
   - [Scalability](#scalability)
     - [HTTP caching](#http-caching)
     - [Load balancing strategies](#load-balancing-strategies)
       - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
       - [Load balancing failover](#load-balancing-failover)
-  - [Reliability](#reliability)
-    - [Service level objectives](#service-level-objectives)
-  - [Consistency Models](#consistency-models)
-    - [Linearizability](#linearizability)
-    - [Strong consistency](#strong-consistency)
-    - [Sequential consistency](#sequential-consistency)
-    - [Causal consistency](#causal-consistency)
-      - [The CALM theorem](#the-calm-theorem)
-    - [Back to causal consistency](#back-to-causal-consistency)
-    - [Eventual consistency](#eventual-consistency)
-    - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
   - [Forward and reverse proxies](#forward-and-reverse-proxies)
   - [Content delivery networks (CDN)](#content-delivery-networks-cdn)
     - [CDN networks](#cdn-networks)
     - [CDN caching](#cdn-caching)
     - [Push and pull CDNs](#push-and-pull-cdns)
+  - [Reliability](#reliability)
+    - [Service level terminology](#service-level-terminology)
 - [Napkin math](#napkin-math)
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
@@ -86,19 +90,20 @@ Welcome to my personal study guide for leetcode problems and system design inter
   - [Data storage](#data-storage)
   - [Networking](#networking)
   - [Computations](#computations)
-  - [DB w/ SQL](#db-w-sql)
-  - [NoSQL](#nosql)
-  - [RAM disk providers (redis or memcached)](#ram-disk-providers-redis-or-memcached)
+  - [DBs with SQL](#dbs-with-sql)
+  - [DBs with NoSQL](#dbs-with-nosql)
+  - [RAM disk providers](#ram-disk-providers)
   - [Storage devices](#storage-devices)
   - [Serialization](#serialization)
   - [Hashing](#hashing)
+  - [Common HTTP status codes](#common-http-status-codes)
 - [General references](#general-references)
 
 # Data structures and algorithms
+[Top](#the-study-guide)
 
 ## Runtimes
-How long an algorithm takes to run for a given input.
-Also called "time complexity".
+How long an algorithm takes to run for a given input. Also called "time complexity" or "TC" for short.
 
 ### Summary
 Runtime | Name | Example
@@ -698,7 +703,7 @@ DP problems can be solved in top-down or bottom-up.
 2. Sometimes, they don't just hand you an array to run DP on. For example, see the [perfect squares problems](./problems/dynamic/perfectsquares_test.go). In that problem, we need to churn out the perfect squares 1, 4, 9, 16, 25, 36, etc. to get started.
 3. Half the battle is just determining what goes into the memo. For *most* problems, we memo the same thing as the problem's output. Again, DP is combining solutions to subproblems to create the final answer. Maybe this is completely obvious, but when you're staring down some crazy confusing leetcode problem for the first time, it helps to remember this.
 4. And, sometiems, you might need to sort the input collection or operate on it in some way. See the [longest divisible subset problem](./problems/dynamic/largestdivsubset_test.go). In that problem, the TC from the solution is N^2 and sorting is NlogN, so this is "fine" to do.
-5. After you identify the memo and what it stores, we can typically init the memo with the "lowest leve", basic answers. For example, in the [perfect squares problem](./problems/dynamic/perfectsquares_test.go), we can init the memo with 1, 4, 9, 25, etc. while less than our target number.
+5. After you identify the memo and what it stores, we can typically init the memo with the base cases. For example, in the [perfect squares problem](./problems/dynamic/perfectsquares_test.go), we can init the memo with 1, 4, 9, 25, etc. while less than our target number.
 6. Next, you'll need to figure out how to get from `dp[0]` to `dp[1]`. We start to author the recurrence relation, the math formula that get's us the answers from `something[i]` to `something[i+1]`. These don't need to be written like a math PhD would write. Something *you* can understand for coding like:
 ```
 The recurrence relation is:
@@ -707,7 +712,7 @@ memo[i] = max(memo[i-1], memo[i-2]... memo[0])+1
 ```
 
 ### Tricks
-- Funny thout. If a sequence length is relatively small, say under 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP because the tests will never finish otherwise.
+- If a sequence length is relatively small, say under 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP because the tests will never finish otherwise.
 
 ## Disjoint union set (DSU)
 
@@ -722,6 +727,8 @@ start1-----end1   // Some interval 1
 We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= start1`. Notice that the formual returns false for intervals 1 and 3.
 
 # Systems design
+[Top](#the-study-guide)
+
 1. The network is reliable;
 2. Latency is zero;
 3. Bandwidth is infinite;
@@ -735,7 +742,7 @@ From [Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacie
 ## Communication
 
 ### The Internet protocol suite
-Here's a model of the abstraction layers of the internet. To be blunt, it's totally bogus. In dev, these layers will spill over or might be non-existent, but it's helpful for conceptualization.
+Here's a model of the abstraction layers of the internet. To be blunt, these layer models are totally bogus; however, they are helpful for conceptualizing the layers of abstraction in Internet communications.
 
 ![](./diagrams/out/ip-protocol-suite/ip-protocol-suite.svg)
 
@@ -771,7 +778,7 @@ An alternative to TCP is UDP, a connectionless protocol that only sends discrete
 
 Online multiplayer video games or video streaming may leverage UDP. There's no value in retryin, it would only degrade the user experience.
 
-### Reliablity
+### Reliable communications
 TCP uses segements (not packets) that let receivers detect missing, duplicate, corrupted, and out of order data. Each segement is associated with a timer; if a receiver does not acknowledge the segment, it is resent.
 
 Operating systems manage the **sockets** the store connection states: opening, established, closing. There are more than 3 states, but this keeps it simple.
@@ -791,7 +798,7 @@ Once communication is started, the sender tries to avoid bombing the receiver wi
 
 TCP will also try to avoid crushing the underlying network with a ton of traffic. The sender will hold onto a congestion window that'll track the number of segments without ackowledgement. When a segment is acknowledged, the sender can increase the traffic; when not acknowledge, the window is decreased. In fact, bandwidth can be represented by `bandwidth = window_size/round_trip_time`.
 
-### Security
+### Secure communications
 TCP/IP does nothing to secure communications. We need to secure against:
 - Spying on data (encryption)
 - Unknown or wrong sender/receiver of data (certificates)
@@ -879,6 +886,112 @@ Note that DNS used to be in plaintext, but now it uses TLS. Yay.
 
 [This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a deep dive.
 
+### Application programming interfaces
+Once we can create semi-reliable and secure connections, we can finally discuss having the client invoke operations on the server. Typically, this is done through ppplication programming interfaces (APIs). APIs can be **direct** or **indirect**.
+Term | Definition | Example
+--- | --- | ---
+Direct | Client communicates directly with a server. | Request-response over HTTP or gRPC. Client sends a `GET /hello`, server responds with `200 OK Hi!`.
+Indirect | Client communicates indirectly with a server via a message broker. They don't communicate directly. | A message bus via RabbitMQ or Google's Pub/Sub. Client adds a message, including any optional data, and the server does some processing when it receives the message.
+
+Data are serialized via JSON, Protobuf, or similar. XML too, but I suspect it's not as widely supported now. JSON is human readable but slower to serialize and deserialize. Protobuf is not human readable and faster to serialize and deserialize. It's all about tradeoffs.
+
+Now, for clients and servers both, requests and responses can be handled in synchronously, asynchronously, or with a mix of both.
+
+#### Synchronous responses
+The server receives a request, does some processing, and returns the entire response immediately. This is typically appropriate when the response is under ~10 MB and can be processed by the server relatively quickly, say in under ~60 seconds. For example, getting a single product's details would typically be straightforward. Listing all products would also be suitable, but the client and server may have to perform paging to get the entire list.
+
+#### Asynchronous responses
+Similar to synchronus, the server receives a request, initiates processing, but only returns paritial or intermediate results. Clients will need to checkback later to determine when processing is completed and where to get the results. This is appropriate for long running processes greater than ~60s or those with greater than ~10MB of data may benefit from this. Clients may be able to poll the processing status or they could provide a postback for the server to call later.
+
+## Replication
+
+### Consistency Models
+TODO: Should consistency models be here? Is it more of a comms thing? It might be.
+
+Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
+
+#### Linearizability
+Also known as atomic consistency. This is a specific form of strong consistency which adds real-time ordering constraints to operations.
+- At some point, the operation appears to occur instantly, called the linearization point.
+- This is a stronger form of consistency than strong (lol, great, not confusing at all) due to the stringent ordering.
+- It's also probably the slowest due to the ordering, synchronizing, and coordination involved. Getting all the computers to agree (coordination) takes time.
+- The emphasis is all on real-time ordering. When clients check back later, the linearized system updates the data between reads.
+
+ChatGPT says,
+> "Imagine you and your friend Alice have magical walkie-talkies. With linearizability, when you send a message to Alice, it's like she receives it instantly, and her response also comes back to you immediately. It's as if the messages are magically happening at the same time."
+
+#### Strong consistency
+Strong consistency ensures all nodes have the same view of data at any given time.
+- All operations appear to be synchronous and read operations appear to return the most recent write.
+- Typically uses distributed locks to agree on the order of operations.
+
+ChatGPT says,
+> "Strong consistency is like having a rule that everyone, including friends in different rooms, always has the same information at the same time. If you say something to Alice, all your friends instantly know about it. It's like the information spreads quickly to everyone."
+
+#### Sequential consistency
+Sequential consistency ensures operations occur in the same order for observers but does not make any real-time guarantees about when an operation's side effect becomes visible. There's a boost in performance but we drop some consistency on the ground. A read from Server A may appear different than Server B, but the operations are sequential so Server A and B will eventually converge and agree. In other words, the replicas are diverging on their view of the world.
+
+A producer/consumer system, synchronized with a message queue, is an example of a sequential concistency. The consumer lags behind the producer.
+
+ChatGPT says,
+> "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
+
+#### Causal consistency
+Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that causally related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem quickly. So, stay CALM (Get it? Stay calm!!? About the theorem? Funny, right?)
+
+##### The CALM theorem
+The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
+
+Logically monotonic means that the output only further refines the input and there's no taking back any prior input.
+
+Very important note: The consistency in CALM is not the same as the consistency in CAP.
+
+Variable assignment is non-monotonic. When you assign something to a variable, the previous value is gone forever. Take a counter value that does
+
+write(1), write(2), write(3) => 3
+but then if they show up out of order:
+write(1), write(3), write(2) => 2
+
+We end up with the wrong value.
+
+In contrast, incrementing allows us to reorder in any way and still get the correct output:
+increment(1), increment(1), increment(1) => 3
+
+#### Back to causal consistency
+Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
+- It's consistent "enough" and easier to work on the eventual consistency.
+- Allows building a system that's available and partition tolerant.
+
+This requires that nodes *agree* on the causally related operations but may *disagree* on the order of unrelated ones. Put another way, the nodes preserve the logical order.
+
+Causal systems are typically backed by conflict-free replicated data types (CRDTs), such as
+- Last writer wins (LWW) - Values are associated with a logical timestamp/version. When the value is broadcasted, nodes only keep the greatest timestamp. Conflicts due to concurrent updates are usually resolved by taking the greater timestamp, but this might not always make sense.
+- Multi-value (MV) - Store the operations in a log of operations that all nodes share. New values are inserted into the MV register. Systems will need to share out their MVs.
+
+ChatGPT says,
+> "With causal consistency, you and your friends agree on some logical order for the messages. If you tell something important to Alice and then mention it to Bob, everyone knows that Alice got the message first. It's about maintaining the cause-and-effect relationship."
+
+#### Eventual consistency
+Eventual consistency relaxes guarantees of strong and sequential. Given enough time, all nodes will converge to the same result. Note that, during updates or partitions, nodes may have different values. For example, reading from Server A and B may yield a stale, earlier result which is very confusing.
+
+Imagine uploading an image to a social network and add it to gallery. Except, when you try to view the gallery, you get a 404; strangely, you already received a message upload success message! Very odd to an observer, but very real in distributed world.
+
+Regardless, eventual can be appropriate tradeoff for certain systems. Slightly different results are perfectly acceptable to achieve higher speeds such as returning the number of users on a website. The number of active users can be stale, and it's typically not a big deal. Note that eventual consistency can be a maintenance burden due to subtle, unexpected bugs.
+
+ChatGPT says,
+> "Now, suppose your friends have regular walkie-talkies, and sometimes messages take a while to reach everyone due to delays. Eventual consistency says that, given enough time without any more messages, eventually, everyone will have the same information. It's about waiting until things settle down."
+
+### CAP and PACELC theorems
+["CAP Theorem: You don't need CP, you don't want AP, and you can't have CA"](https://www.youtube.com/watch?v=hUd_9FENShA)
+
+Engineering is, in part, about tradeoffs. Distributed systems are no different. CAP theorem, can be summarized as "strong consistency, availability, and partition tolerance: pick two of three." Except...
+- Network partitions are simply unavoidable, so you really just get to pick between availability and consistency
+- But, also, CAP defines available as *eventually* getting a response but we know that perfect availability is impossible
+- And also a slow response is as bad as not receiving one at all.
+- Network paritions are rare in a data center. It can certainly happen though.
+
+So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
+
 ## Scalability
 
 ### HTTP caching
@@ -932,101 +1045,6 @@ The more nines you need, the more LBs you'll need to supply.
 References:
 - [Load balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques)
 
-## Reliability
-
-### Service level objectives
-| Term | Definition | Example
-| ---- | ---------- | -------
-| SLI | Service Level Indicator | A carefully defined quantitative aspect of the level of service that is being provided | Request latency in milliseconds, error rates, system throughput, etc.
-| SLO | Service Level Objective | A target or range of acceptable SLI values.
-
-## Consistency Models
-TODO: Should consistency models be here? Is it more of a comms thing? It might be.
-
-Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
-
-### Linearizability
-Also known as atomic consistency. This is a specific form of strong consistency which adds real-time ordering constraints to operations.
-- At some point, the operation appears to occur instantly, called the linearization point.
-- This is a stronger form of consistency than strong (lol, great, not confusing at all) due to the stringent ordering.
-- It's also probably the slowest due to the ordering, synchronizing, and coordination involved. Getting all the computers to agree (coordination) takes time.
-- The emphasis is all on real-time ordering. When clients check back later, the linearized system updates the data between reads.
-
-ChatGPT says,
-> "Imagine you and your friend Alice have magical walkie-talkies. With linearizability, when you send a message to Alice, it's like she receives it instantly, and her response also comes back to you immediately. It's as if the messages are magically happening at the same time."
-
-### Strong consistency
-Strong consistency ensures all nodes have the same view of data at any given time.
-- All operations appear to be synchronous and read operations appear to return the most recent write.
-- Typically uses distributed locks to agree on the order of operations.
-
-ChatGPT says,
-> "Strong consistency is like having a rule that everyone, including friends in different rooms, always has the same information at the same time. If you say something to Alice, all your friends instantly know about it. It's like the information spreads quickly to everyone."
-
-### Sequential consistency
-Sequential consistency ensures operations occur in the same order for observers but does not make any real-time guarantees about when an operation's side effect becomes visible. There's a boost in performance but we drop some consistency on the ground. A read from Server A may appear different than Server B, but the operations are sequential so Server A and B will eventually converge and agree. In other words, the replicas are diverging on their view of the world.
-
-A producer/consumer system, synchronized with a message queue, is an example of a sequential concistency. The consumer lags behind the producer.
-
-ChatGPT says,
-> "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
-
-### Causal consistency
-Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that causally related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem quickly. So, stay CALM (Get it? Stay calm!!? About the theorem? Funny, right?)
-
-#### The CALM theorem
-The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
-
-Logically monotonic means that the output only further refines the input and there's no taking back any prior input.
-
-Very important note: The consistency in CALM is not the same as the consistency in CAP.
-
-Variable assignment is non-monotonic. When you assign something to a variable, the previous value is gone forever. Take a counter value that does
-
-write(1), write(2), write(3) => 3
-but then if they show up out of order:
-write(1), write(3), write(2) => 2
-
-We end up with the wrong value.
-
-In contrast, incrementing allows us to reorder in any way and still get the correct output:
-increment(1), increment(1), increment(1) => 3
-
-### Back to causal consistency
-Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
-- It's consistent "enough" and easier to work on the eventual consistency.
-- Allows building a system that's available and partition tolerant.
-
-This requires that nodes *agree* on the causally related operations but may *disagree* on the order of unrelated ones. Put another way, the nodes preserve the logical order.
-
-Causal systems are typically backed by conflict-free replicated data types (CRDTs), such as
-- Last writer wins (LWW) - Values are associated with a logical timestamp/version. When the value is broadcasted, nodes only keep the greatest timestamp. Conflicts due to concurrent updates are usually resolved by taking the greater timestamp, but this might not always make sense.
-- Multi-value (MV) - Store the operations in a log of operations that all nodes share. New values are inserted into the MV register. Systems will need to share out their MVs.
-
-ChatGPT says,
-> "With causal consistency, you and your friends agree on some logical order for the messages. If you tell something important to Alice and then mention it to Bob, everyone knows that Alice got the message first. It's about maintaining the cause-and-effect relationship."
-
-### Eventual consistency
-Eventual consistency relaxes guarantees of strong and sequential. Given enough time, all nodes will converge to the same result. Note that, during updates or partitions, nodes may have different values. For example, reading from Server A and B may yield a stale, earlier result which is very confusing.
-
-Imagine uploading an image to a social network and add it to gallery. Except, when you try to view the gallery, you get a 404; strangely, you already received a message upload success message! Very odd to an observer, but very real in distributed world.
-
-Regardless, eventual can be appropriate tradeoff for certain systems. Slightly different results are perfectly acceptable to achieve higher speeds such as returning the number of users on a website. The number of active users can be stale, and it's typically not a big deal. Note that eventual consistency can be a maintenance burden due to subtle, unexpected bugs.
-
-ChatGPT says,
-> "Now, suppose your friends have regular walkie-talkies, and sometimes messages take a while to reach everyone due to delays. Eventual consistency says that, given enough time without any more messages, eventually, everyone will have the same information. It's about waiting until things settle down."
-
-### CAP and PACELC theorems
-["CAP Theorem: You don't need CP, you don't want AP, and you can't have CA"](https://www.youtube.com/watch?v=hUd_9FENShA)
-
-Engineering is, in part, about tradeoffs. Distributed systems are no different. CAP theorem, can be summarized as "strong consistency, availability, and partition tolerance: pick two of three." Except...
-- Network partitions are simply unavoidable, so you really just get to pick between availability and consistency
-- But, also, CAP defines available as *eventually* getting a response but we know that perfect availability is impossible
-- And also a slow response is as bad as not receiving one at all.
-- Network paritions are rare in a data center. It can certainly happen though.
-
-So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
-
 ## Forward and reverse proxies
 ChatGPT says,
 > "Let's imagine you want to get a toy from a toy store, but instead of going there yourself, you send your friend to bring it back for you. In this scenario, your friend is acting like a proxy.
@@ -1059,7 +1077,18 @@ Before clients can get resources from a CDN, the content needs to be delivered t
 - Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propogated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
 - **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
+## Reliability
+
+### Service level terminology
+| Abreviation | Term | Definition | Example
+| ---- | ---------- | ------- | ---- |
+| SLI | Service Level Indicator | A carefully defined quantitative aspect of the level of service that is being provided. | Request latency in milliseconds, error rates, system throughput, etc. Queries per second (QPS) is not a good SLI since we don't control how many queries from users we get. This doesn't mean that QPS isn't worth knowing, however.
+| SLO | Service Level Objective | A target or range of acceptable SLI values. | Availability >= 99.99%, avg. response times <= 400ms, P99 response times <= 400ms, etc. Again, queries per second (QPS), on the other hand, isn't under our control and doesn't make for a good SLI/SLO.
+| SLA | Service Level Agreement | 
+
 # Napkin math
+[Top](#the-study-guide)
+
 Also known as back of the envelope calculations. These numbers are **heavily** rounded for memorizing. We want to be in the ballpark for creating useful mental models and to develop a gut feel for numbers being discussed to streamline conversations and make sure we've got a top-notch metnal model of what's being talked about. If you need accurate numbers, then do your Ti-83 math instead.
 
 ## Costs
@@ -1110,17 +1139,40 @@ func InsertionSort(arr []int) {
 
 ## Computations
 
-## DB w/ SQL
+## DBs with SQL
 
-## NoSQL
+## DBs with NoSQL
 
-## RAM disk providers (redis or memcached)
+## RAM disk providers
+Like Redis or Memcached.
 
 ## Storage devices
 
 ## Serialization
 
 ## Hashing
+
+## Common HTTP status codes
+Code | Name | Description
+--- | --- | ---
+200 | OK | Indicates the request succeeded.
+201 | Created | XXXXXXX
+202 | Accepted | XXXXXX
+204 | No content | XXXXXXX
+307 | Temporary redirect | XXXXXX
+308 | Permanent redirect | XXXXXXX
+400 | Bad request | XXXXXX
+401 | Unauthorized | XXXXXX
+403 | Forbidden | XXXXXXX
+404 | Not found | XXXXXXX
+408 | Timeout | XXXXXXX
+409 | Conflict | XXXXXX
+429 | Too many requests | XXXXXXX
+500 | Internal server error | XXXXXX
+501 | Not implemented | XXXXXXX
+502 | Bad gateway | XXXXXXXX
+503 | Service unavailable | XXXXXXX
+504 | Gateway timeout | XXXXXXX
 
 # General references
 - [Understanding Distributed Systems](https://understandingdistributed.systems/) is a really great book on the topic and worth a deep dive. The references are all free or easy to access and worth deep-diving on too.
