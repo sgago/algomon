@@ -1,7 +1,8 @@
 package bubble
 
 import (
-	"github.com/sgago/algomon/cmp"
+	"cmp"
+
 	"github.com/sgago/algomon/sliceutil"
 )
 
@@ -24,7 +25,7 @@ import (
 //	  Swapped: true
 //	  Swapped: false
 //	  Done
-func Sort[T cmp.Types](arr []T) {
+func Sort[T cmp.Ordered](arr []T) {
 	SortFunc[T](arr, func(i, j T) bool { return i < j })
 }
 

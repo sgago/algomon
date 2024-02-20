@@ -1,7 +1,8 @@
 package bst
 
 import (
-	"github.com/sgago/algomon/cmp"
+	"cmp"
+
 	"github.com/sgago/algomon/col/node/binary"
 )
 
@@ -21,7 +22,7 @@ func NewFunc[T any](less func(a, b T) bool, vals ...T) *Tree[T] {
 	return t
 }
 
-func New[T cmp.Types](vals ...T) *Tree[T] {
+func New[T cmp.Ordered](vals ...T) *Tree[T] {
 	return NewFunc[T](func(a, b T) bool { return a < b }, vals...)
 }
 

@@ -11,15 +11,15 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [O(N)](#on)
     - [O(KN)](#okn)
     - [O(N + M)](#on--m)
-    - [O(|V| + |E|)](#ov--e)
+    - [O(V + E)](#ov--e)
     - [O(NlogN)](#onlogn)
     - [O(N^2)](#on2)
     - [O(2^N)](#o2n)
     - [O(N!)](#on-1)
-    - [Amortized time complexity](#amortized-time-complexity)
+    - [Amortized](#amortized)
     - [Tricks](#tricks)
-  - [Hash functions and hashmaps](#hash-functions-and-hashmaps)
-    - [Common Hash Functions](#common-hash-functions)
+  - [Hash functions and maps](#hash-functions-and-maps)
+    - [Common hash functions](#common-hash-functions)
     - [Pigeonhole principle](#pigeonhole-principle)
     - [References](#references)
   - [Sorting](#sorting)
@@ -31,7 +31,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Trees](#trees)
     - [Terminology](#terminology)
     - [Binary trees](#binary-trees)
-    - [Binary search trees (BST)](#binary-search-trees-bst)
+    - [Binary search trees](#binary-search-trees)
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
   - [Heaps](#heaps)
@@ -39,8 +39,9 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Depth first search](#depth-first-search)
   - [Backtracking](#backtracking)
   - [Graphs](#graphs)
-  - [Dynamic programming (DP)](#dynamic-programming-dp)
-    - [How to solve DP](#how-to-solve-dp)
+  - [Dynamic programming](#dynamic-programming)
+    - [Strategy for solving dynamic programming problems](#strategy-for-solving-dynamic-programming-problems)
+      - [Top down or bottom up?](#top-down-or-bottom-up)
     - [Tricks](#tricks-1)
   - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
   - [Intervals](#intervals)
@@ -54,13 +55,17 @@ Welcome to my personal study guide for leetcode problems and systems design.
       - [Closing and the TIME\_WAIT](#closing-and-the-time_wait)
       - [Established connections and congestion control](#established-connections-and-congestion-control)
     - [Secure communications](#secure-communications)
-      - [Encyption](#encyption)
+      - [Encryption](#encryption)
       - [Authentication and certificates](#authentication-and-certificates)
       - [Data integrity](#data-integrity)
     - [Discovery and DNS](#discovery-and-dns)
     - [Application programming interfaces](#application-programming-interfaces)
-      - [Synchronous responses](#synchronous-responses)
-      - [Asynchronous responses](#asynchronous-responses)
+      - [RESTful HTTP requests and responses](#restful-http-requests-and-responses)
+      - [Synchronous HTTP requests](#synchronous-http-requests)
+      - [Asynchronous HTTP requests](#asynchronous-http-requests)
+      - [Synchronous HTTP responses](#synchronous-http-responses)
+      - [Asynchronous HTTP responses](#asynchronous-http-responses)
+      - [HTTP versions](#http-versions)
   - [Scalability](#scalability)
     - [Replication](#replication)
       - [Consistency models](#consistency-models)
@@ -88,6 +93,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
   - [Sorting](#sorting-1)
+  - [Stacks and queues](#stacks-and-queues)
   - [Data storage](#data-storage)
   - [Networking](#networking)
   - [Computations](#computations)
@@ -110,18 +116,18 @@ How long an algorithm takes to run for a given input. Also called "time complexi
 Runtime | Name | Example
 --- | --- | --- 
 `O(1)` | Constant | Math, assignments
-`O(alpha(N))` | Inverse Ackerman | Rare. Close to constant time; think O(4) at most. Appears is Disjointed Set Union.
+`O(alpha(N))` | Inverse Ackermann | Rare. Close to constant time; think O(4) at most. Appears is Disjointed Set Union.
 `O(logN)` | Log | Binary search, binary search tree search
 `O(KlogN)` | K linear | K binary searches
 `O(N)` | Linear | Traverse array, tree traversal
 `O(KN)` | K Linear | Performing a linear operation K times
 `O(N + M)` | Linear NM | Traverse array, tree traversal on two separate collections
-`O(|V| + |E|)` | Graph | Traverse graph with V vertices and E edges
+`O(V + E)` | Graph | Traverse graph with V vertices and E edges
 `O(NlogN)` | Sort | Quick and merge sort, divide n' conquer
 `O(N^2)` | Quadratic | Nested loops
 `O(2^N)` | Exponential | Combinatorial, backtracking, permutations
 `O(N!)` | Factorial | Combinatorial, backtracking, permutations
-`Amoritized` | Amoritized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
+Amortized | Amortized | High order terms that are rarely done, smaller order done more frequently. Like doing O(N^2) once at startup and O(logN) every other time.
 
 ### O(1)
 Constant time. A constant set of of operations.
@@ -159,7 +165,7 @@ Typically, when you need to do a log(N) process K times.
 Linear time. Typically, looping thru a data struct a constant number of times.
 - Traversing an entire array or linked list.
 - Two pointer solutions
-- Tree or graph traversal due to visiting all the nodes or verts
+- Tree or graph traversal due to visiting all the nodes or vertices
 - Stack and queue
 
 ```go
@@ -175,7 +181,7 @@ Typically, when you need to process N K times. Very exciting.
 Typically, when you have two inputs of size N and M. Say you loop once N times and then loop M times.
 Again, very exciting.
 
-### O(|V| + |E|)
+### O(V + E)
 For both DFS and BFS on a graph, the time complexity is O(|V| + |E|), where V is the number of vertices and E is the number of edges. The number of edges in a graph could be 1 to |V|^2, we really don't know. So we include both terms here.
 
 ### O(NlogN)
@@ -217,12 +223,12 @@ Note, this one is harder to analyze at first.
 
 ### O(N!)
 Grows insanely rapidly. Only solvable for small N and typically requires memoization.
-- Combinatorial problems, backtracking, permuations.
+- Combinatorial problems, backtracking, permutations.
 
 Note, this one is hard to analyze/spot at first.
 
-### Amortized time complexity
-Amortized time, meaning to gradualy write off the initial time costs, if an operation is rarely done. For example, if we had N^2*N tasks, we could consider the solution O(N) instead of O(N^2) = N*O(1) * O(N) if we only do the N^2 task rarely. For example, if we dynamically size an array one time at startup.
+### Amortized
+Amortized time, meaning to gradually write off the initial time costs, if an operation is rarely done. For example, if we had N^2*N tasks, we could consider the solution O(N) instead of O(N^2) = N*O(1) * O(N) if we only do the N^2 task rarely. For example, if we dynamically size an array one time at startup.
 
 ### Tricks
 Note that, like the other runtimes, we ignore constant factors and lower order terms: 5N^2 + N = 5N^2 = N^2
@@ -235,37 +241,37 @@ smaller N terms and constants. Unlike infinity, it does not swallow up other ter
 - 3N^3 + 2N^2 + N -> N^3
 - N^2 + 2^N + N! -> N!
 
-## Hash functions and hashmaps
-In short, a hash function converts arbitrary sized data into a fixed value, typically an Int32. For example, summing all integers in an arrary and mod'ing them by 100. We convert a bunch of data or text into a smaller, ergonomic number.
+## Hash functions and maps
+In short, a hash function converts arbitrary sized data into a fixed value, typically an Int32. For example, summing all integers in an array and mod'ing them by 100. We convert a bunch of data or text into a smaller, ergonomic number.
 
-Typically, you don't have to write hash functions from scratch outside of, say, for GetHashcode for .NET objects or similar.
+Typically, you don't have to write hash functions from scratch outside of, say, for `GetHashcode` for C# objects or similar.
 
 A hash collision occurs when a hash function generates the same hash value for different data.
 
 A good hash function is typically:
 - Fast to compute (low time complexity or runtime)
 - Very low chance of collision
-- All possible values have a somewhat equal chance of occuring.
+- All possible values have a somewhat equal chance of occurring.
 
-### Common Hash Functions
+### Common hash functions
 Name | Description
 --- | ---
-SHA | Cryptographic hash. SHA-3 is the lastest. SHA-2 and -1 have vulnerabilities now.
+SHA | Cryptographic hash. SHA-3 is the latest. SHA-2 and -1 have vulnerabilities now.
 Blake2 | An improvement over SHA-3, high speed and used in crypto mining.
-Argon2 | Password hashing function designed to be resistant to brute force or dictionary attacks. Uses large amount of memory (memory-hard) to make attacks more difficult, for hackers using specialized hardward to crack passwords.
+Argon2 | Password hashing function designed to be resistant to brute force or dictionary attacks. Uses large amount of memory (memory-hard) to make attacks more difficult, for hackers using specialized hardware to crack passwords.
 MurmurHash | Fast an efficient non cryptographic has. Useful for hash tables.
 CRC | Cyclic redundancy check. Non cryptographic. Fast, but not used for security. Typically, the CRC is appended to messages, like HTTP, to check for corruption.
 MD5 | Fast 128 bit hash, but no longer recommended for security.
 
 ### Pigeonhole principle
-Collisions are unavoidable, so we need to design around it. For example, if "anne" and "john" created the same hash, we'd overwrite the same hashtable entry. To avoid this, we can use [separate chaining](https://en.wikipedia.org/wiki/Hash_table#Separate_chaining) or other strategies.
+Collisions are unavoidable, so we need to design around it. For example, if "anne" and "john" created the same hash, we'd overwrite the same hash table entry. To avoid this, we can use [separate chaining](https://en.wikipedia.org/wiki/Hash_table#Separate_chaining) or other strategies.
 
 ### References
 [List of hash functions](https://www.geeksforgeeks.org/hash-functions-and-list-types-of-hash-functions/)
 
 ## Sorting
 - Time complexity = The amount of time it takes to sort the collection as a function of the size of the input data, represented in big O notation. Basic sorting is usually N^2, advanced are usually NlogN.
-- Stablility = If two elements have equal keys, then the order of these elements remains unchanged. This can be valuable for historical data, user expectations, or multi-criteria sorts where not sorting equal elements is important.
+- Stability = If two elements have equal keys, then the order of these elements remains unchanged. This can be valuable for historical data, user expectations, or multi-criteria sorts where not sorting equal elements is important.
 - In-place = The sorting algorithm sorts the input data structure without need to allocate additional memory to store the sorted results. This is valuable for large data sets.
 - Simple = Simple algorithms are those that are relatively straightforward to implement with a one or two loops. The more complicated algorithms like quick and merge sort use divide and conquer strategies. This does not mean they are super easy to just bang out, however.
 - Adaptable = Sometimes, input data are already somewhat sorted and we can minimize the number of comparisons that we need to make. For example, gnome sort is O(N) for an already sorted collection!
@@ -398,8 +404,8 @@ Perfect trees are used to estimate time complexity for combinatorial problems wh
 - The number of internal nodes is # of leaf nodes - 1.
 - The total number of nodes is = 2 * leaf nodes - 1.
 
-### Binary search trees (BST)
-BSTs are a special type of binary tree where all left descendents < node < all right descendents.
+### Binary search trees
+Binary search trees (BSTs) are a special type of binary tree where all left descendants < node < all right descendants.
 ```
       8
      / \
@@ -409,7 +415,7 @@ BSTs are a special type of binary tree where all left descendents < node < all r
        \
         7
 ```
-Notice that 3 is to the left of 8 because 3 < 8. Similarily, 14 is to the right of 10.
+Notice that 3 is to the left of 8 because 3 < 8. Similarly, 14 is to the right of 10.
 Note that the in-order traversal of the tree visits the nodes in monotonically increasing order.
 
 ### Balanced and unbalanced binary trees
@@ -645,14 +651,14 @@ This is only a graph due to the cycle and disconnected vertex.
 ```
 
 Trees and graphs have different terminology
-- Verticies are nodes in trees.
-- Verticies are connected by edges.
-- Verticies connected by an edge are neighbors (children and parents in trees).
+- Vertices are nodes in trees.
+- Vertices are connected by edges.
+- Vertices connected by an edge are neighbors (children and parents in trees).
 - Edges can be directed or undirected. Usually the edges are undirected.
-- Paths are sequences of verticies. Cycles start and end at the same vertex.
+- Paths are sequences of vertices. Cycles start and end at the same vertex.
 - A connected graph means every vertex is joined by a path to a vertex; otherwise, the graph is disconnected.
 
-Typically, graphs are stored via adjaceny lists or maps. For example, this graph
+Typically, graphs are stored via adjacency lists or maps. For example, this graph
 ```
     1
    / \
@@ -681,35 +687,38 @@ visited := make(map[int]bool)
 visited[1] = true
 ```
 
-Another clever trick is to wipe out the value in the adjancency graph somehow. Make it negative or something that indicates we visited it to avoid storing a whole other data structure for visited/not-visited stuff.
+Another clever trick is to wipe out the value in the adjacency graph somehow. Make it negative or something that indicates we visited it to avoid storing a whole other data structure for visited/not-visited stuff.
 
 When deciding between BFS or DFS to explore graphs, choose BFS for shortest distance or graphs of unknown or infinite sizes due to exploring all adjacent neighbors first.
 
 DFS is better at using less memory for wide graphs (graphs with large breadth of factors). Put another way, BFS stores the breadth of the graph as it searches. DFS is also better at finding nodes that are far away such as a maze exit.
 
-## Dynamic programming (DP)
-A problem can be solved via dynamic programming if
+## Dynamic programming
+A problem can be solved via dynamic programming (DP) if
 1. The problem can be divided into sub-problems
 2. The sub-problems from bullet 1 overlap
 
 Really, DP == DFS + memoization + pruning. Pruning is important, to save space and reduced wasted calculations.
 
-In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp[i - 2]`. These formulas are called the recurrene relation and is critical. Without this, you'll end up flailing around. They also, aren't super obvious. Take finding the longest increasing subsequence (LIS). The recurrence relation from top-down is `lis(i) = max(lis(i-1), lis(i-2) ... lis(0))` but only for `nums at i-1, i-2, ..., 0 < num at i`.
+In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp[i - 2]`. These formulas are called the recurrence relation and is critical. Without this, you'll end up flailing around. They also, aren't super obvious. Take finding the longest increasing subsequence (LIS). The recurrence relation from top-down is `lis(i) = max(lis(i-1), lis(i-2) ... lis(0))` but only for `nums at i-1, i-2, ..., 0 < num at i`.
 
 DP problems can be solved in top-down or bottom-up.
 
-### How to solve DP
-1. Identify if we've got overlapping problems or not. If they don't overlap, DP ain't going to work.
-2. Sometimes, they don't just hand you an array to run DP on. For example, see the [perfect squares problems](./problems/dynamic/perfectsquares_test.go). In that problem, we need to churn out the perfect squares 1, 4, 9, 16, 25, 36, etc. to get started.
-3. Half the battle is just determining what goes into the memo. For *most* problems, we memo the same thing as the problem's output. Again, DP is combining solutions to subproblems to create the final answer. Maybe this is completely obvious, but when you're staring down some crazy confusing leetcode problem for the first time, it helps to remember this.
-4. And, sometiems, you might need to sort the input collection or operate on it in some way. See the [longest divisible subset problem](./problems/dynamic/largestdivsubset_test.go). In that problem, the TC from the solution is N^2 and sorting is NlogN, so this is "fine" to do.
-5. After you identify the memo and what it stores, we can typically init the memo with the base cases. For example, in the [perfect squares problem](./problems/dynamic/perfectsquares_test.go), we can init the memo with 1, 4, 9, 25, etc. while less than our target number.
-6. Next, you'll need to figure out how to get from `dp[0]` to `dp[1]`. We start to author the recurrence relation, the math formula that get's us the answers from `something[i]` to `something[i+1]`. These don't need to be written like a math PhD would write. Something *you* can understand for coding like:
+### Strategy for solving dynamic programming problems
+1. **Identify overlapping subproblems:** Determine if the problem exhibits overlapping subproblems. If not, DP will not work and you'll need to try a different approach.
+2. **Handle or preprocess the input (optional):** In some cases, the problem might not provide a straightforward array for DP. For example, see the [perfect squares problems](./problems/dynamic/perfectsquares_test.go) where we need to generate perfect squares first or the [largest divisible subset problem](./problems/dynamic_programming/topdown/largestdivsubset_test.go) where the input needs to be sorted first. Futhermore, you might not realize this straight away which makes the understanding and psuedocoding the problem important.
+3. **Define the memo:** Clarify what needs to memoized. In *most* cases, the memo is the same as, or aligns closely with, the problems output.
+4. **Initialize the memo with base cases:** We can typically initialize the memo with the base cases. For example, in the [perfect squares problem](./problems/dynamic/perfectsquares_test.go), we can initialize the memo with perfect squares like 1, 4, 9, 25, etc. immediately.
+5. **Define the recurrence relation:** Develop the recurrence relation, a formula for transition from one state to the next. For example, clearly state how to transition from `dp[i]` to `dp[i+1]`. Start with transition from the base cases to the next case. Write the recurrence relation in something *you* can understand for coding like:
 ```
 The recurrence relation is:
 memo[i] = max(memo[i-1], memo[i-2]... memo[0])+1
-  but ONLY for each memo[i-1] when nums[i]%nums[i-1]==0.
+  - applies ONLY for each memo[i-1] when nums[i]%nums[i-1]==0.
+  - memo[0] is a base case and equals 0
 ```
+
+#### Top down or bottom up?
+
 
 ### Tricks
 - If a sequence length is relatively small, say under 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP because the tests will never finish otherwise.
@@ -718,13 +727,13 @@ memo[i] = max(memo[i-1], memo[i-2]... memo[0])+1
 
 ## Intervals
 ```
-start1-----end1   // Some interval 1
+start1-----end1   // Interval 1
 
-    start2-----------end2    // Some other interval 2
+  start2-----------end2    // Interval 2 that overlaps with 1
 
-                           start3-----end3    // Yet another interval 3
+                           start3-----end3    // Interval 3 that doesn't overlap with either 1 or 2
 ```
-We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= start1`. Notice that the formual returns false for intervals 1 and 3.
+We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= start1`. Notice that the formula returns false for intervals 1 and 3.
 
 # Systems design
 [Top](#the-study-guide)
@@ -753,8 +762,8 @@ Here's a model of the abstraction layers of the internet. To be blunt, these lay
 - The **application layer** defines the high level communications like HTTP or DNS. Often, this is the target abstraction for our work.
 
 There are other layers: physical and data link. We'll briefly not them here:
-- Physical concerns itself with voltages, pins, cabeling, wireless frequencies, etc.
-- Data link conerns itself with providing frames for the raw bits and provides some error correction/detection.
+- Physical concerns itself with voltages, pins, cabling, wireless frequencies, etc.
+- Data link concerns itself with providing frames for the raw bits and provides some error correction/detection.
 
 Also, TCP is on it's way out and being replaced by [QUIC](https://en.wikipedia.org/wiki/QUIC), aka TCP/2, which multiplexes connections between two endpoints using UDP.
 
@@ -775,12 +784,12 @@ However, just like in a big neighborhood, sometimes things can change. Maybe a r
 So, in simple terms, BGP is like the map that helps computer networks on the internet find the best paths to talk to each other, just like you finding the best way to get to your friend's house in your neighborhood."
 
 ### User datagram protocol (UDP)
-An alternative to TCP is UDP, a connectionless protocol that only sends discrete packets of a limited size. It's barebones and offers no reliability guarantees. UDP bootstraps other protoocls, that want some but not all of TCP's guarantees.
+An alternative to TCP is UDP, a connection-less protocol that only sends discrete packets of a limited size. It's bare-bones and offers no reliability guarantees. UDP bootstraps other protocols, that want some but not all of TCP's guarantees.
 
-Online multiplayer video games or video streaming may leverage UDP. There's no value in retryin, it would only degrade the user experience.
+Online multiplayer video games or video streaming may leverage UDP. There's no value in retrying, it would only degrade the user experience.
 
 ### Reliable communications
-TCP uses segements (not packets) that let receivers detect missing, duplicate, corrupted, and out of order data. Each segement is associated with a timer; if a receiver does not acknowledge the segment, it is resent.
+TCP uses segments (not packets) that let receivers detect missing, duplicate, corrupted, and out of order data. Each segment is associated with a timer; if a receiver does not acknowledge the segment, it is resent.
 
 Operating systems manage the **sockets** the store connection states: opening, established, closing. There are more than 3 states, but this keeps it simple.
 
@@ -797,7 +806,7 @@ Sockets, and the resources they consume, do not immediately close. The enter a w
 #### Established connections and congestion control
 Once communication is started, the sender tries to avoid bombing the receiver with a ton of data. The receiver will shoot back it's buffer size to the sender, so that it doesn't get overwhelmed. TCP is rate-limited just like rate limiting on API key or IP address.
 
-TCP will also try to avoid crushing the underlying network with a ton of traffic. The sender will hold onto a congestion window that'll track the number of segments without ackowledgement. When a segment is acknowledged, the sender can increase the traffic; when not acknowledge, the window is decreased. In fact, bandwidth can be represented by `bandwidth = window_size/round_trip_time`.
+TCP will also try to avoid crushing the underlying network with a ton of traffic. The sender will hold onto a congestion window that'll track the number of segments without acknowledgement. When a segment is acknowledged, the sender can increase the traffic; when not acknowledge, the window is decreased. In fact, bandwidth can be represented by `bandwidth = window_size/round_trip_time`.
 
 ### Secure communications
 TCP/IP does nothing to secure communications. We need to secure against:
@@ -805,12 +814,12 @@ TCP/IP does nothing to secure communications. We need to secure against:
 - Unknown or wrong sender/receiver of data (certificates)
 - Accidental or malicious changes to data (message auth code via SHA or similar)
 
-Transport layer security (TLS) swoops in, runs on top of TCP, and provides encyption, authentication, and data integrity.
+Transport layer security (TLS) swoops in, runs on top of TCP, and provides encryption, authentication, and data integrity.
 
-#### Encyption
-Encryption means that the data are obfuscated and can only be read by the receivers. When TLS starts, the server and client swap public keys for asymetric encryption. There's a really great blog on the subject [here](https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/). Once the keys are sent, both sender and receiver use symetric encryption which is faster and cheaper to minimize overhead. Note that
+#### Encryption
+Encryption means that the data are obfuscated and can only be read by the receivers. When TLS starts, the server and client swap public keys for asymmetric encryption. There's a really great blog on the subject [here](https://blog.cloudflare.com/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/). Once the keys are sent, both sender and receiver use symmetric encryption which is faster and cheaper to minimize overhead. Note that
 - The shared keys are regenerated periodically to maintain safety.
-- Bascially all traffic should use encryption due to modern CPUs having cryptographic instructions.
+- Basically, all traffic should use encryption due to modern CPUs having cryptographic instructions.
 
 Note that the TCP handshake runs first, then followed by the TLS handshake. QUIC aims to speed this along some.
 ![](./diagrams/out/Tcp-vs-quic-handshake.svg)
@@ -875,9 +884,9 @@ You can, of course, slap a port and IP address into the URL bar, but that's a lo
 2. The ISP's resolver will iteratively resolve the hostname for clients. It will also cache results.
 3. If the ISP's resolver doesn't have it, it'll send a query to the root name server (NS). Root NS map the top-level domains (TLD) of the request, like `.com`. It'll give the address of the TLD server.
 4. Once the ISP's resolver has the `.com` part, it'll query the TLD name server with `something.com`. This is the iterative part where the ISP's name resolver will iterate a lot.
-5. The TLD name server maps `something.com` to an authorative name server responsible for the domain.
+5. The TLD name server maps `something.com` to an authoritative name server responsible for the domain.
 6. We can return the IP address of `something.com` finally.
-7. If there's an optional subdomain, like `definitely.something.com`, then the name server would return the authorative name server for the subdomain and the process keeps going.
+7. If there's an optional subdomain, like `definitely.something.com`, then the name server would return the authoritative name server for the subdomain and the process keeps going.
 
 Again, the results are typically cached along the way. Similar to HTTP caching, DNS results are cached with a time to live (TTL) for how long the result is valid for. And, like HTTP caching, we can get some eventual consistency problems that surface. If the cache TTL is too long, then clients will try to connect to the wrong IP address. If the cache TTL is too short, you'll increase DNS load and increase avg response times for clients due to the several round trips DNS takes.
 
@@ -885,28 +894,127 @@ In terms of resiliency, DNS is single point of failure since normal humans simpl
 
 Note that DNS used to be in plaintext, but now it uses TLS. Yay.
 
-[This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a deep dive.
+[This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a solid deep dive into DNS.
 
 ### Application programming interfaces
-Once we can create semi-reliable and secure connections, we can finally discuss having the client invoke operations on the server. Typically, this is done through ppplication programming interfaces (APIs). APIs can be **direct** or **indirect**.
+Once we can create semi-reliable and secure connections, we can finally discuss having the client invoke operations on the server. Typically, this is done through application programming interfaces (APIs). APIs can be **direct** or **indirect**.
 Term | Definition | Example
 --- | --- | ---
 Direct | Client communicates directly with a server. | Request-response over HTTP or gRPC. Client sends a `GET /hello`, server responds with `200 OK Hi!`.
 Indirect | Client communicates indirectly with a server via a message broker. They don't communicate directly. | A message bus via RabbitMQ or Google's Pub/Sub. Client adds a message, including any optional data, and the server does some processing when it receives the message.
 
-Data are serialized via JSON, Protobuf, or similar. XML too, but I suspect it's not as widely supported now. JSON is human readable but slower to serialize and deserialize. Protobuf is not human readable and faster to serialize and deserialize. It's all about tradeoffs.
+We're going to focus on HTTP for request-response as it's quite popular. gRPC is also popular for inter-service communications via request-response communication.
+
+Anyway, data are serialized via JSON, Protobuf, or similar. XML too, but I suspect it's not as widely supported now. JSON is human readable but slower to serialize and deserialize. Protobuf is not human readable and faster to serialize and deserialize. It's all about tradeoffs.
 
 Now, for clients and servers both, requests and responses can be handled in synchronously, asynchronously, or with a mix of both.
 
-#### Synchronous responses
+#### RESTful HTTP requests and responses
+- Requests are stateless adn contain all necessary information to process. Some requests can be re-executed and create the same response (idempotent). Some, are not.
+- Responses are implicitly or explicitly labeled as cacheable or non-cacheable. If cacheable, the client can reuse the response.
+
+#### Synchronous HTTP requests
+After the client sends a request, it can simply block until the server responds. While "simple" this typically degrades the user experience quickly and wastes CPU time. We could be doing other stuff while waiting on this request. Note, performing synchronous HTTP requests is typically seen as un-cool.
+
+```go
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+)
+
+func makeSyncHttpRequest(url string) {
+	response, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	fmt.Println("Sync Response:", string(body))
+}
+
+func main() {
+	url := "https://jsonplaceholder.typicode.com/posts/1"
+
+	// Make a synchronous HTTP request
+	makeSyncHttpRequest(url)
+
+	// Continue with other work
+}
+```
+
+#### Asynchronous HTTP requests
+Alternatively, many languages like TypeScript, C#, and Go hide callbacks via async and await abstractions. We can avoid having the client freeze while waiting for the server to respond.
+
+```go
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"sync"
+)
+
+func makeAsyncHttpRequest(url string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	response, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	fmt.Println("Async Response:", string(body))
+}
+
+func main() {
+	var wg sync.WaitGroup
+
+	url := "https://jsonplaceholder.typicode.com/posts/1"
+
+	// Make an asynchronous HTTP request using a goroutine
+	wg.Add(1)
+	go makeAsyncHttpRequest(url, &wg)
+
+	// Do other work concurrently if needed
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+}
+```
+
+#### Synchronous HTTP responses
 The server receives a request, does some processing, and returns the entire response immediately. This is typically appropriate when the response is under ~10 MB and can be processed by the server relatively quickly, say in under ~60 seconds. For example, getting a single product's details would typically be straightforward. Listing all products would also be suitable, but the client and server may have to perform paging to get the entire list.
 
-#### Asynchronous responses
-Similar to synchronus, the server receives a request, initiates processing, but only returns paritial or intermediate results. Clients will need to checkback later to determine when processing is completed and where to get the results. This is appropriate for long running processes greater than ~60s or those with greater than ~10MB of data may benefit from this. Clients may be able to poll the processing status or they could provide a postback for the server to call later.
+#### Asynchronous HTTP responses
+Similar to synchronous, the server receives a request, initiates processing, but only returns partial or intermediate results. Clients will need to check back later to determine when processing is completed and where to get the results. This is appropriate for long running processes greater than ~60s or those with greater than ~10MB of data may benefit from this. Clients may be able to poll the processing status or they could provide a postback for the server to call later.
+
+#### HTTP versions
+
 
 ## Scalability
+[Top](#the-study-guide)
 
 ### Replication
+Just clone your server's code and you'll be good to go, right? Wrong. Welcome to replicas, consistency models, distributed locking, and so on.
+
 Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
 
 #### Consistency models
@@ -932,7 +1040,7 @@ ChatGPT says,
 ##### Sequential consistency
 Sequential consistency ensures operations occur in the same order for observers but does not make any real-time guarantees about when an operation's side effect becomes visible. There's a boost in performance but we drop some consistency on the ground. A read from Server A may appear different than Server B, but the operations are sequential so Server A and B will eventually converge and agree. In other words, the replicas are diverging on their view of the world.
 
-A producer/consumer system, synchronized with a message queue, is an example of a sequential concistency. The consumer lags behind the producer.
+A producer/consumer system, synchronized with a message queue, is an example of a sequential consistency. The consumer lags behind the producer.
 
 ChatGPT says,
 > "Now, let's say you and Alice have regular walkie-talkies, but you both agree to take turns talking. So, the messages go back and forth in the order you send them. It's like having a clear order for your conversation."
@@ -959,7 +1067,7 @@ In contrast, incrementing allows us to reorder in any way and still get the corr
 increment(1), increment(1), increment(1) => 3
 
 ##### Back to causal consistency
-Back to causal consistency. Causal maintains happend-before order (the causal order) among operations. This makes causal attrative for many applications because:
+Back to causal consistency. Causal maintains happened-before order (the causal order) among operations. This makes causal attractive for many applications because:
 - It's consistent "enough" and easier to work on the eventual consistency.
 - Allows building a system that's available and partition tolerant.
 
@@ -989,7 +1097,7 @@ Engineering is, in part, about tradeoffs. Distributed systems are no different. 
 - Network partitions are simply unavoidable, so you really just get to pick between availability and consistency
 - But, also, CAP defines available as *eventually* getting a response but we know that perfect availability is impossible
 - And also a slow response is as bad as not receiving one at all.
-- Network paritions are rare in a data center. It can certainly happen though.
+- Network partitions are rare in a data center. It can certainly happen though.
 
 So, while helpful, CAP is limited in its practical application. This is, again, about tradeoffs. The PACELC theorem, an extension of CAP, expresses this as, when a network is partitioned (P), choose between availability (A) and consistency (C). Else, when operating normally (E), choose between latency (L) and consistency (C). We see that this is not some binary choice between AP and CP, but rather a spectrum of tradeoffs between the various consistency models and latency. Indeed, some systems like [Azure's Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/consistency-levels) allow you to choose the consistency model you want which is neat.
 
@@ -1008,7 +1116,7 @@ This is great because we simply added a HTTP header and reduced server load and 
 
 For example, in the worst cases, say the dev team changed an endpoint with a breaking change and updated the JavaScript that hits this endpoint. If the client is still using an old JavaScript file due to improper headers/caching, they'll get an error when trying to use the endpoint with the wrong JavaScript code. This will require clients to perform a hard reload, wait for the resource to expire, or simply try again and hope that the consistency is there.
 
-Regardless, this is typically a good price to pay by being careful when using the cache, using cache-busting techniques, use CSS/JS/whatever hashcodes or versions like `<link rel="stylesheet" type="text/css" href="styles.css?hash=abcd1234">` or `<link rel="stylesheet" type="text/css" href="styles.css?v=1">`. Alternatively, we can force clients to retrieve static resources from different URLs.
+Regardless, this is typically a good price to pay by being careful when using the cache, using cache-busting techniques, use CSS/JS/whatever hash codes or versions like `<link rel="stylesheet" type="text/css" href="styles.css?hash=abcd1234">` or `<link rel="stylesheet" type="text/css" href="styles.css?v=1">`. Alternatively, we can force clients to retrieve static resources from different URLs.
 
 Note that HTTP caching treats reads separate from writes like CQRS.
 
@@ -1063,27 +1171,27 @@ In summary, proxies are like helpers or friends that help you get things from di
 CDNs are collections of caching servers. When clients request certain resources, like images or video, they can be served from physically close CDNs that cache the content. If the CDN doesn't have the resource, it'll request the content from the "origin server" (read: your application server) from the original URL. The resource is stashed locally and finally served to the client.
 
 #### CDN networks
-The main power of CDNs isn't the caching, it's actually the CDN network itself. BGP doesn't concern itself with latencies or congestion. CDNs can exploit and optimize various techniques to increase bandwidth. They have persistent connections and optimial TCP window sizes to maximize bandwidth.
+The main power of CDNs isn't the caching, it's actually the CDN network itself. BGP doesn't concern itself with latencies or congestion. CDNs can exploit and optimize various techniques to increase bandwidth. They have persistent connections and optimal TCP window sizes to maximize bandwidth.
 
 Furthermore, CDN are optimized in terms of location and placement. There's a global DNS load balancing, an extension of DNS, that considers client location via IP address and returns a list of the closest clusters, network congestion, and cluster health. Next, CDNs are placed at internet exchange points, points where ISPs connect together.
 
 #### CDN caching
 The top level servers in CDN are the edge servers/clusters. If content is unavailable at the edge, the edge will get the content from the origin server while leveraging the overlay network.
 
-Now, imagine there's hundreds of edge CDN servers. They could end up overwhelm origin servers (read: your servers) due to a low cache hit ratio. More edge servers, closer physically, but more misses. Less servers, further physicall, but more content hits. To alleviate this pressure on the origin servers, CDNs have intermediate cache servers with a larger amount of content.
+Now, imagine there's hundreds of edge CDN servers. They could end up overwhelm origin servers (read: your servers) due to a low cache hit ratio. More edge servers, closer physically, but more misses. Less servers, further physically, but more content hits. To alleviate this pressure on the origin servers, CDNs have intermediate cache servers with a larger amount of content.
 
 Note that CDN content is partitioned among many servers because no one computer can handle all the content. Reminder that partitioning is a core scalability pattern.
 
 #### Push and pull CDNs
 Before clients can get resources from a CDN, the content needs to be delivered to the CDN somehow. And there are tradeoffs to consider.
-- Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propogated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
-- **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maitenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
+- Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propagated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
+- **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maintenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
 ## Reliability
 [Top](#the-study-guide)
 
 ### Service level terminology
-| Abreviation | Term | Definition | Example
+| Abbreviation | Term | Definition | Example
 | ---- | ---------- | ------- | ---- |
 | SLI | Service Level Indicator | A carefully defined quantitative aspect of the level of service that is being provided. | Request latency in milliseconds, error rates, system throughput, etc. Queries per second (QPS) is not a good SLI since we don't control how many queries from users we get. This doesn't mean that QPS isn't worth knowing, however.
 | SLO | Service Level Objective | A target or range of acceptable SLI values. | Availability >= 99.99%, avg. response times <= 400ms, P99 response times <= 400ms, etc. Again, queries per second (QPS), on the other hand, isn't under our control and doesn't make for a good SLI/SLO.
@@ -1092,7 +1200,7 @@ Before clients can get resources from a CDN, the content needs to be delivered t
 # Napkin math
 [Top](#the-study-guide)
 
-Also known as back of the envelope calculations. These numbers are **heavily** rounded for memorizing. We want to be in the ballpark for creating useful mental models and to develop a gut feel for numbers being discussed to streamline conversations and make sure we've got a top-notch metnal model of what's being talked about. If you need accurate numbers, then do your Ti-83 math instead.
+Also known as back of the envelope calculations. These numbers are **heavily** rounded for memorizing. We want to be in the ballpark for creating useful mental models and to develop a gut feel for numbers being discussed to streamline conversations and make sure we've got a top-notch mental model of what's being talked about. If you need accurate numbers, then do your Ti-83 math instead.
 
 ## Costs
 Cloud costs are important. It's good to have a sense of how much cloud computing costs will run. If we're using 400, four core CPUs per month, we want to know what that'll cost.
@@ -1135,6 +1243,27 @@ func InsertionSort(arr []int) {
 	}
 }
 ```
+
+## Stacks and queues
+```go
+import "fmt"
+
+type Stack []int
+
+func (s *Stack) Push(val int) {
+	*s = append(*s, val)
+}
+
+func (s *Stack) Pop() (int, error) {
+	if len(*s) == 0 {
+		return 0, fmt.Errorf("stack is empty")
+	}
+	val := (*s)[len(*s)-1]
+	*s = (*s)[:len(*s)-1]
+	return val, nil
+}
+```
+
 
 ## Data storage
 

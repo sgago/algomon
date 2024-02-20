@@ -1,9 +1,9 @@
 package stack
 
 import (
+	"cmp"
 	"fmt"
 
-	"github.com/sgago/algomon/cmp"
 	"github.com/sgago/algomon/col/conc"
 )
 
@@ -15,7 +15,7 @@ type Stack[T any] struct {
 	less func(a, b T) bool
 }
 
-func New[T cmp.Types](cap int) *Stack[T] {
+func New[T cmp.Ordered](cap int) *Stack[T] {
 	s := &Stack[T]{
 		v:    make([]T, cap),
 		idx:  -1,

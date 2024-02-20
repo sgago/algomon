@@ -1,3 +1,4 @@
+// Package dsu implements a ranked disjoint set union (DSU).
 package dsu
 
 import (
@@ -6,9 +7,11 @@ import (
 
 // Dsu represents a Disjoint Set Union data structure.
 //
-// Disjoint means that sets may not have any shared elements.
-// Set is a collection with all uniqure or distinct elements.
-// Union means the operation of merging or combining the disjointed sets.
+//   - Disjoint means that sets will not have shared elements.
+//
+//   - Set is a collection with all unique or distinct elements.
+//
+//   - Union means the operation of merging or combining the disjointed sets.
 type Dsu[T comparable] struct {
 	// A map of each element to their parent element
 	// a.k.a. to their root element or set ID.
