@@ -349,6 +349,46 @@ func TestBurstyRateLimiting(t *testing.T) {
 	}
 }
 
+type Stack []int
+
+func (s *Stack) Push(x int) {
+	*s = append(*s, x)
+}
+
+func (s *Stack) Pop() int {
+	result := (*s)[len(*s)-1]
+	*s = (*s)[:len(*s)-1]
+	return result
+}
+
+func (s *Stack) Peek() int {
+	return (*s)[len(*s)-1]
+}
+
+func TestStack(t *testing.T) {
+	// TODO: Author tests and comments
+}
+
+type Queue []int
+
+func (s *Queue) Enq(x int) {
+	*s = append(*s, x)
+}
+
+func (s *Queue) Deq() int {
+	result := (*s)[0]
+	*s = (*s)[1:len(*s)]
+	return result
+}
+
+func (s *Queue) Peek() int {
+	return (*s)[0]
+}
+
+func TestQueue(t *testing.T) {
+	// TODO: Author a tests and comments
+}
+
 func TestMaps(t *testing.T) {
 	graph := map[int][]int{
 		1: {2, 3},
