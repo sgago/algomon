@@ -66,6 +66,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
       - [Synchronous HTTP responses](#synchronous-http-responses)
       - [Asynchronous HTTP responses](#asynchronous-http-responses)
       - [HTTP versions](#http-versions)
+    - [Messaging](#messaging)
   - [Scalability](#scalability)
     - [Replication](#replication)
       - [Consistency models](#consistency-models)
@@ -1008,16 +1009,55 @@ Similar to synchronous, the server receives a request, initiates processing, but
 
 #### HTTP versions
 
+### Messaging
+Messaging is an indirect form of communication where data are passed through a message broker. This nicely decouples the the services. Messaging is typically suitable for processes that take a long time or require large amounts of data.
+
+Pub/Sub, ServiceBus, and RabbitMQ, are all examples of message queue providers. Like HTTP requests, messages typically have header and body data as well as a unique message ID. Also, messages can be stored in JSON, protobuf, and so on. Some brokers even provide support for native objects like Azure. Messages are typically only removed from the broker once the consumer - the service that actually receives and uses the message -  successfully processes the message.
+
+However, unlike request-response via HTTP transactions, message queues are inherently asynchronous. Furthermore, messages can be queued within the broker even if the message consumers are down.
+
+Consumers can choose to process multiple messages at a time, a.k.a. batch processing or message batches. This increases processing latency of individual messages but does improve the applications throughput. This extra latency is typically an acceptable tradeoff and should be considered.
+
+Producers and consumers can be arranged in a few different ways:
+- Point-to-point (p2p): A message is delivered to exactly one consumer.
+- Publish-subscribe (pubsub): A message is delivered to all consumers.
+
+Message queues are not a silver bullet and there are many issues to consider:
+- The broker adds additional latency through additional the queue itself and more communication.
+- There is a dependency on the broker itself. It it goes down, so does your system.
+- Not all message queues are durable. Non-durable queues will lose all messages if the broker crashes.
+- This is a form of sequential consistency. Consumers lag producers.
+- There are similar problems to the IP protocol. Messages can be missed, dropped, duplicated, and arrive out of order. Note that some brokers provide message de-duplication.
+- We have similar time and timestamp considerations to make, if there are many message producers. Multiple producers will not share the same clock.
+- Broker storage is not infinite; there might be a maximum limit to the number of messages a broker can store.
+- Consumers might be unable to keep up with producers and the queue which will cause a backlog of messages to accrue. This can be due to not enough consumer replicas, outages, and errors. Poisonous messages, those that repeatedly fail, can waste consumer time and degrade the entire system.
+- Completely bad or poisoned messages can be dumped to a dead letter channel for manual inspection and correction by a human. This, of course, takes time. Alternatively, we can decide to drop (delete/ignore) bad messages, but we this means we might miss something important.
+- Message queues are partitioned and bring along the same issues that partitioning brings. Messages may not arrive in order. Also, partitions can become "hot" and consumers might not be able to keep up. Message shuffling among the various partitions can reduce throughput.
+- *Exactly once processing* does not exist. *At least once and maybe more* can lead to issues. Therefore, we can require messages to be idempotent, so that we can simulate exactly once processing.
+- In fact, you may need to choose between *at most once but maybe zero* or *at least once but maybe more* processing.
+- Still idempotent messages will not cure everything. Say we create a consumer that sends an email to a customer when it receives a message. However, due to a bug, the consumer crashes *immediately* after successfully sending the email and is unable to acknowledge (ACK) the message. The consumer and broker will simply try again and send another email up to some max retry limit, if there even is a retry limit.
+
+Producer and consumer messaging can be arranged in different styles or configurations, depending on the problem they're solving.
+1. One-way
+  - Producers can "fire n' forget" messages in a p2p configuration.
+2. Request-response
+  - Producers can send consumers requests through one message channel and receiver responses from consumers via another response channel. Consumers can tag responses with the request they're responding to and send feedback upstream.
+3. Broadcast
+  - Messages can be sent to all consumers. After all, there could be many consumers that care about the same message but for different reasons. For example, one consumer could send a confirmation email to the customer and another consumer could do payment processing.
 
 ## Scalability
 [Top](#the-study-guide)
 
-### Replication
-Just clone your server's code and you'll be good to go, right? Wrong. Welcome to replicas, consistency models, distributed locking, and so on.
+Basically, we have three ways to scale out applications:
+1. Decomposition: Breaking the processing into separate services known as decomposition or functional decomposition.
+2. Partitioning: Dividing data into partitions and distributing data among different nodes.
+3. Replication: Replicating functionality or data among nodes.
 
-Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
+### Replication
+Just clone your server's code and you'll be good to go, right? Wrong. Welcome to replicas, consistency models, distributed locking, CRDTs, and so on.
 
 #### Consistency models
+Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
 
 ##### Linearizability
 Also known as atomic consistency. This is a specific form of strong consistency which adds real-time ordering constraints to operations.
@@ -1245,22 +1285,43 @@ func InsertionSort(arr []int) {
 ```
 
 ## Stacks and queues
-```go
-import "fmt"
+If you need to implement your own go stack or queue, you don't need to go crazy with locking, generics, or efficiency. Here's how to code rudimentary stacks and queues.
 
+```go
+// A straightforward stack without generics, locking, etc.
 type Stack []int
 
-func (s *Stack) Push(val int) {
-	*s = append(*s, val)
+func (s *Stack) Push(x int) {
+	*s = append(*s, x)
 }
 
-func (s *Stack) Pop() (int, error) {
-	if len(*s) == 0 {
-		return 0, fmt.Errorf("stack is empty")
-	}
-	val := (*s)[len(*s)-1]
+func (s *Stack) Pop() int {
+	result := (*s)[len(*s)-1]
 	*s = (*s)[:len(*s)-1]
-	return val, nil
+	return result
+}
+
+func (s *Stack) Peek() int {
+	return (*s)[len(*s)-1]
+}
+```
+
+```go
+// A straightforward queue without generics, locking, etc.
+type Queue []int
+
+func (s *Queue) Enq(x int) {
+	*s = append(*s, x)
+}
+
+func (s *Queue) Deq() int {
+	result := (*s)[0]
+	*s = (*s)[1:len(*s)]
+	return result
+}
+
+func (s *Queue) Peek() int {
+	return (*s)[0]
 }
 ```
 
