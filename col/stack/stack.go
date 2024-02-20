@@ -6,7 +6,7 @@ import (
 
 	"github.com/sgago/algomon/col/conc"
 	"github.com/sgago/algomon/errs"
-	"github.com/sgago/algomon/sliceutil"
+	sliceutil "github.com/sgago/algomon/utils/slices"
 )
 
 // Stack is a a first-in last-out (FILO) collection.

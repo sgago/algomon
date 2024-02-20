@@ -1,4 +1,4 @@
-package sliceutil
+package slices
 
 func Swap[T any](s []T, idxA, idxB int) {
 	s[idxB], s[idxA] = s[idxA], s[idxB]

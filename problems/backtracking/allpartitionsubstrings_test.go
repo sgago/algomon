@@ -80,7 +80,7 @@ import (
 	"testing"
 
 	"github.com/sgago/algomon/col/queue"
-	"github.com/sgago/algomon/stringutil"
+	stringutil "github.com/sgago/algomon/utils/strings"
 )
 
 func TestPartition(t *testing.T) {

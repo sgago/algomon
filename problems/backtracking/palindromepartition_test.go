@@ -29,7 +29,7 @@ import (
 	"testing"
 
 	"github.com/sgago/algomon/col/node"
-	"github.com/sgago/algomon/stringutil"
+	stringutil "github.com/sgago/algomon/utils/strings"
 )
 
 func TestPalindromePartitions(t *testing.T) {

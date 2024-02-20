@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"fmt"
 
-	"github.com/sgago/algomon/sliceutil"
+	sliceutil "github.com/sgago/algomon/utils/slices"
 )
 
 type Heap[T any] struct {

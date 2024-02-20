@@ -1,6 +1,6 @@
 package quick
 
-import "github.com/sgago/algomon/sliceutil"
+import sliceutil "github.com/sgago/algomon/utils/slices"
 
 // SortFunc performs quicksort on the given slice using the provided comparison function
 func SortFunc[T any](arr *[]T, less func(i, j T) bool) {

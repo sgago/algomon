@@ -3,7 +3,7 @@ package bubble
 import (
 	"cmp"
 
-	"github.com/sgago/algomon/sliceutil"
+	sliceutil "github.com/sgago/algomon/utils/slices"
 )
 
 // Sort a collection via bubble sort.
