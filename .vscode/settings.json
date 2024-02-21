@@ -2,6 +2,7 @@
     "cSpell.words": [
         "Ackermann",
         "Arity",
+        "automagically",
         "cacheable",
         "CQRS",
         "CRDTs",
@@ -28,6 +29,7 @@
         "Protobuf",
         "psuedocoding",
         "QUIC",
+        "rebalance",
         "runtimes",
         "Sedrubal",
         "struct",

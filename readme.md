@@ -79,6 +79,9 @@ Welcome to my personal study guide for leetcode problems and systems design.
         - [Eventual consistency](#eventual-consistency)
     - [CAP and PACELC theorems](#cap-and-pacelc-theorems)
     - [HTTP caching](#http-caching)
+    - [Partitioning](#partitioning)
+      - [Ranged partitioning](#ranged-partitioning)
+      - [Hash partitioning](#hash-partitioning)
     - [Load balancing](#load-balancing)
       - [Load balancing strategies](#load-balancing-strategies)
       - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
@@ -1160,6 +1163,33 @@ Regardless, this is typically a good price to pay by being careful when using th
 
 Note that HTTP caching treats reads separate from writes like CQRS.
 
+### Partitioning
+As our data storage and access grows, one machine will simply be unable to handle everything by itself. To continue to scale, we can partition (divide up) or federate data among other nodes. With more nodes, we will be able to spread the load through an increased system capacity. Typically, this partitioning, or mapping data to an appropriate *shard*, is done through a coordination service like Apache Zookeeper which will be able to map data to nodes.
+
+Partitioning has costs, however.
+- We now have a new dependency on a coordination service with all the fun that brings.
+- Adding or removing partitions could require shifting a lot of data. We want to avoid shifting data to redistribute load where possible because it's time consuming and disruptive.
+- Performing aggregate calculations (sum all order totals, count all customers, etc.) requires querying data among many shards.
+- "Hot" or frequently accessed partitions may limit the systems ability to scale.
+
+There's basically two broad types of partitioning: ranged and hash.
+
+#### Ranged partitioning
+Ranged partitioning means dividing the data by time, names, or some other value. Ranged partitioning can be tricky, however, as we need to distribute our keys well to keep up with demand and load.
+
+For example, say we created shards to hold customers, one for each letter of the alphabet. We might expect that the Z shard won't get nearly as much traffic as S. In fact, we might get so many S customers that we need to split (rebalance) the S shard into two just to keep up! Similar issues can arise from using time to divide data.
+
+There are some ways to fight against this. We can allocate bonus shards ahead of time, more than we need, to keep up with demand. However, the shards may still have hotspots or be under or over utilized still. Another option is *dynamic sharding* where the system will automagically split and merge partitions based on size and access. If a shard is too large or accessed very frequently, we can split the shard to spread load and vice versa.
+
+Note that we can attempt to prefix IDs to get a better distribution, but this can be tricky and complex.
+
+#### Hash partitioning
+Another option is to use a hashed value for distributing requests or data. Hash values themselves can end up being more random than customer names and would potentially distribute data or requests more evenly.
+
+Note that we prefer to use [consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) to distribute load instead of naively using modulo or similar. Adding or removing partitions using modulo would be quite disruptive, causing most keys and associated data to be re-organized into different nodes. Consistent hashing minimizes this disruption.
+
+Note that we lose convenient sorting that ranged hashing provides when using hash partitioning. This can be somewhat relieved by using secondary keys for sorting on an individual partition.
+
 ### Load balancing
 [Top](#the-study-guide)
 
@@ -1324,7 +1354,6 @@ func (s *Queue) Peek() int {
 	return (*s)[0]
 }
 ```
-
 
 ## Data storage
 
