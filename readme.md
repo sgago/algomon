@@ -97,6 +97,13 @@ Welcome to my personal study guide for leetcode problems and systems design.
       - [Blob storage](#blob-storage-2)
       - [Blob access](#blob-access)
   - [Reliability](#reliability)
+    - [Common failures](#common-failures)
+    - [Risk](#risk)
+    - [Redundancy](#redundancy)
+    - [Fault isolation](#fault-isolation)
+      - [Shuffle sharding](#shuffle-sharding)
+      - [Cellular architecture](#cellular-architecture)
+  - [Monitoring and observability](#monitoring-and-observability)
     - [Service level terminology](#service-level-terminology)
 - [Napkin math](#napkin-math)
   - [Costs](#costs)
@@ -1082,7 +1089,7 @@ ChatGPT says,
 Causal consistency relaxes some guarantees of strong in favor of speed. Causal guarantees that causally related operations are in a consistent order and preserves causality. Before we continue, we need to discuss the CALM theorem quickly. So, stay CALM (Get it? Stay calm!!? About the theorem? Funny, right?)
 
 ###### The CALM theorem
-The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
+The Consistency As Logical Monotonicity (CALM) theorem uses logic to reason about distributed systems and introduces the idea of monotonicity in the context of logic. Furthermore, it helps give us a framework to determine if we can move coordination off the critical path. CALM tells us we can get to coordination-free distributed implementations only if the system is monotonic.
 
 Logically monotonic means that the output only further refines the input and there's no taking back any prior input.
 
@@ -1098,6 +1105,8 @@ We end up with the wrong value.
 
 In contrast, incrementing allows us to reorder in any way and still get the correct output:
 increment(1), increment(1), increment(1) => 3
+
+Check out [Keeping Calm PDF](https://arxiv.org/pdf/1901.01930.pdf) for a much better and detailed description.
 
 ##### Back to causal consistency
 Back to causal consistency. Causal maintains happened-before order (the causal order) among operations. This makes causal attractive for many applications because:
@@ -1325,14 +1334,45 @@ In terms of accessing blobs on AS, the account and file name in AS can be used t
 
 At scale, anything that can go wrong usually does. Computer parts break, network errors galore, programmer errors, and so on.
 
+### Common failures
+There's several, common failures that can occur:
 1. **Hardware problems** Like CPUs, memory, or HDDs dying.
 2. **Bad error handling** Programmers mishandle certain exceptions or don't handle them at all. 
 3. **Configuration changes** Updating certain configuration values can be just as deadly as a bad coding mistake. Configurations should be managed. For example, changing feature flags or YAML configuration files should be done carefully.
 4. **Single points of failure (SPOF)** Any SPOF isn't super great. A single DNS server, LB, replica, availability zone, etc. can all bring down your application. Humans, those with certain positions or privileges, can bring down entire systems. For example, a coder can push a single bug and bring down systems.
 5. **Network issues** There are just tons of reasons for slow or missing responses. Even semi-slow responses can lead to *gray failures* of sorts.
-6. **Memory or resource leaks** 
+6. **Memory or resource leaks** Memory leaks can cause a system to slow down over time. As RAM starts to get choked out, the OS will move RAM to HDD disk aggressively and/or garbage collectors will get more aggressive. This all eats up CPU time and degrades performance. Ports and threads can also leak.
 7. **Load pressure** Sudden spikes in load or load pressure can cause system outages for pieces that doesn't scale. For example, in a prior gig, they put up a product for free. The sudden influx of customers caused the system to go down. Alteratively, Christmas season shoppers can suddenly overwhelm a system or similar.
 8. **Cascading failures** Say a LB is hands requests to two downstream servers A and B. Everything is going smoothly but then server B suddenly dies. LB says, "No problem, I'll send all the requests to A now." Suddenly, server A can't keep up and dies. A cascading failure.
+
+### Risk
+So, risks and failures are not the same thing. Risk is a failure that has a percent chance of occurring. You have two choices with risk: mitigation and ignoring. For example, we can simply ignore the risk of a issuing a single HTTP request or we can try to mitigate issues by retrying.
+
+Note that we can try to rank certain risks, issues, gaps, etc. and determine mitigation or ignoring steps. For example, low risk and impact could maybe be ignored; alternatively, high risk and impact should would be worth mitigating. One could even factor the cost of mitigation into the chart.
+
+### Redundancy
+Replicas are one defense, but again this has downsides in terms of complexity.
+
+Unfortunately, redundancy doesn't solve all our risks. *Correlated errors*, failures that can hammer many servers at once, will still hurt us. For example, redundancy won't help if a software bug deployed to all the servers. If an entire data center wide outage will bring down... the entire data center.
+
+Now, cloud providers replicate stacks to multiple data centers. Multiple data centers in a region make an *availability zone (AZ)*. Data centers are close enough to have low latency but far enough away to reduce disaster chance.
+
+### Fault isolation
+We can isolate failures and problems, much like the bulkheads on a ship. Without a bulkhead, a single leak can sink the entire ship. However, by incorporating bulkheads, only a specific part of the ship is affected, as we've compartmentalized it with walls. The ship is degraded, but it doesn't succumb entirely. Distributed systems encounter similar vulnerabilities, akin to "leaks." A single user might send malicious requests capable of bringing down the entire system, or normal bots and crawlers, mimicking human behavior with rapid request capabilities, can overwhelm servers. Instead of leaks, we refer to these issues as poison pills.
+
+Similar to ships, challenges arising from poison pills can be mitigated using the bulkhead pattern - by isolating faults. For instance, consider having 6 replicas and an antagonistic computer bot attempting to disrupt your service. Each request from the bot takes down the specific replica it reaches. With 6 requests, the entire system could be brought down.
+
+To address this, let's establish 3 pairs of servers to introduce redundancy and consistently direct users to the same server pair. By confining the bot to the same server pair, even if 2 out of 3 server pairs remain operational, only approximately 33% of users will be affected. While not ideal, this approach is superior to the bot impacting all servers and causing a complete system outage.
+
+#### Shuffle sharding
+Now, we can enhance our system further by employing shuffle sharding. Instead of consistently directing the same users to specific replicas, we can dynamically reassign users to minimize shared users between pairs. For instance, users A and B may initially share server 1, but with redundancy measures, we can reposition user A to server 2 and user B to server 3. Consequently, if user A causes a server to go down, user B can still receive service requests, ensuring uninterrupted functionality.
+
+There will still be some user overlap, but it will be less likely. With this pattern, we can increase our bulkheads to 15! The combination formula is `n!/(r!(n-r)!) = 6!/(2!4!) = 15`. This tells the number of unique subgroups we can have.
+
+#### Cellular architecture
+Another strategy is to combine all dependencies together into cell: LBs, storage, servers, etc. Requests can be shared via some gateway service. A benefit is that we can learn the maximum limits of each cell and scale out accordingly. We can totally understand the performance of a cell and how it handles load.
+
+## Monitoring and observability
 
 ### Service level terminology
 | Abbreviation | Term | Definition | Example
