@@ -25,9 +25,6 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Sorting](#sorting)
     - [Summary](#summary-1)
     - [Go sort](#go-sort)
-    - [Insertion sort](#insertion-sort)
-    - [Selection sort](#selection-sort)
-    - [Bubble sort](#bubble-sort)
   - [Trees](#trees)
     - [Terminology](#terminology)
     - [Binary trees](#binary-trees)
@@ -86,11 +83,19 @@ Welcome to my personal study guide for leetcode problems and systems design.
       - [Load balancing strategies](#load-balancing-strategies)
       - [Layer 4 and 7 load balancing](#layer-4-and-7-load-balancing)
       - [Load balancing failover](#load-balancing-failover)
+      - [Load balancer uptime](#load-balancer-uptime)
+      - [Service discovery](#service-discovery)
     - [Forward and reverse proxies](#forward-and-reverse-proxies)
     - [Content delivery networks (CDN)](#content-delivery-networks-cdn)
       - [CDN networks](#cdn-networks)
       - [CDN caching](#cdn-caching)
       - [Push and pull CDNs](#push-and-pull-cdns)
+    - [Blob storage](#blob-storage)
+      - [Blob vs File](#blob-vs-file)
+        - [Traditional hierarchical file-based systems](#traditional-hierarchical-file-based-systems)
+        - [Blob storage](#blob-storage-1)
+      - [Blob storage](#blob-storage-2)
+      - [Blob access](#blob-access)
   - [Reliability](#reliability)
     - [Service level terminology](#service-level-terminology)
 - [Napkin math](#napkin-math)
@@ -285,11 +290,11 @@ Collisions are unavoidable, so we need to design around it. For example, if "ann
 A summary of common algorithms, courtesy of ChatGPT.
 | Algorithm            | Time Complexity (Worst Case) | Stable | In-Place | Adaptable | Parallelizable | Description                                              |
 |----------------------|-----------------------------|-----------|----------|-----------|-----------------|----------------------------------------------------------|
-| Bubble Sort          | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Repeatedly compares and swaps adjacent elements.          |
-| Selection Sort       | O(n^2)                       | No        | Yes      | No        | Yes (limited)   | Repeatedly selects the minimum element and swaps with the current position. |
-| Insertion Sort       | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Builds the sorted list one element at a time by inserting into the correct position. |
-| Merge Sort           | O(n log n)                   | Yes       | No       | Yes       | Yes             | Divides the input into halves, recursively sorts them, and merges them. |
-| Quick Sort           | O(n^2) (rare), O(n log n)    | No        | Yes      | Yes       | Yes (limited)   | Chooses a pivot, partitions the data, and recursively sorts the partitions. |
+| [Bubble Sort](./sort/bubble/bubble.go)          | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Repeatedly compares and swaps adjacent elements.          |
+| [Selection Sort](./sort/selection/selection.go)       | O(n^2)                       | No        | Yes      | No        | Yes (limited)   | Repeatedly selects the minimum element and swaps with the current position. |
+| [Insertion Sort](./sort/insertion/insertion.go)       | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Builds the sorted list one element at a time by inserting into the correct position. |
+| [Merge Sort](./sort/merge/merge.go)           | O(n log n)                   | Yes       | No       | Yes       | Yes             | Divides the input into halves, recursively sorts them, and merges them. |
+| [Quick Sort](./sort/quick/quick.go)           | O(n^2) (rare), O(n log n)    | No        | Yes      | Yes       | Yes (limited)   | Chooses a pivot, partitions the data, and recursively sorts the partitions. |
 | Heap Sort            | O(n log n)                   | No        | Yes      | No        | Yes             | Builds a binary heap and repeatedly extracts the maximum element. |
 | Shell Sort           | O(n log^2 n) (worst known)   | No        | Yes      | No        | No              | A variation of insertion sort with multiple passes and varying gap sizes. |
 | Radix Sort           | O(nk) (k is the number of digits) | Yes  | Yes      | No        | Yes             | Processes digits or elements in multiple passes, each pass sorted independently. |
@@ -315,23 +320,6 @@ cmp := func(a, b int) int {
 
 slices.SortFunc(arr, cmp)
 ```
-
-### Insertion sort
-```go
-func InsertionSort(arr []int) {
-	for i := 1; i < len(arr); i++ {
-		// This is the magic. j starts at the ith element and walks smaller elements to the front of the array.
-		// So, while j-1 > j, swap it so that j-1 < j and decrement j. Note j > 0 cause we're doing j-1 stuff.
-		for j := i; j > 0 && arr[j-1] > arr[j]; j-- {
-			sliceutil.Swap(arr, j-1, j)
-		}
-	}
-}
-```
-
-### Selection sort
-
-### Bubble sort
 
 ## Trees
 Trees are a type of graph composed of nodes and edges.
@@ -1057,7 +1045,9 @@ Basically, we have three ways to scale out applications:
 3. Replication: Replicating functionality or data among nodes.
 
 ### Replication
-Just clone your server's code and you'll be good to go, right? Wrong. Welcome to replicas, consistency models, distributed locking, CRDTs, and so on.
+As an application scales up, eventually, a single server simply won't be able to keep up. It'll simply fall over.
+
+So, just clone your server's code and you'll be good to go, right? Wrong. Welcome to replicas, consistency models, distributed locking, CRDTs, and so on.
 
 #### Consistency models
 Distributed systems are often modeled around consistency models which define how the updates to a distributed system are observed. With different models, you may see data visibility, ordering of operations, performance differences, fault tolerance, ease of implementation, and ease of maintenance. In short, as a system becomes more available, it becomes less consistent.
@@ -1193,7 +1183,15 @@ Note that we lose convenient sorting that ranged hashing provides when using has
 ### Load balancing
 [Top](#the-study-guide)
 
+If we have multiple application servers, we can route requests to all them. Now, this is actually somewhat tricky to do well.
+
+Servers, behind the load balancers (LBs) will scale up and down transparently to consumers. If LBs detect faulty servers, it can remove them from the server pool.
+
 #### Load balancing strategies
+There are tons of strategies for shelling out load to server replicas, but it's tricky. For example, we could:
+- Split requests evenly -> Except some servers might have more hardware resources than others. Not all servers are exactly the same!
+- We could expose a health endpoint and read the CPU load -> Except a CPU that just comes online could get bombed by requests. Then, when it's overloaded, it'll go back down to zero only to be hammered again!
+
 Name | Description
 --- | ---
 Round robin | Sling requests to servers in order, one at a time. LB1 -> LB2 -> LB3 repeat.
@@ -1206,6 +1204,8 @@ Fixed weighting | Servers are assigned a scored (weighted). The highest score wi
 Weighted response time | The LB can use a server's response time to decide where to send traffic. The fastest server wins the next request.
 Source IP hash | The source and destination IPs are hashed and used to direct requests. This one is useful if all requests need to go to the same server.
 URL hash | Similar to source IP hash except the requested URL is used instead and helps ensure requests are sent to the same servers.
+
+So, lots of strategies we can try. Supposedly, randomly picking two servers and assigning the request to the one with lower load works well ([here](https://brooker.co.za/blog/2012/01/17/two-random.html)).
 
 #### Layer 4 and 7 load balancing
 Load balancers can make routing decisions based on information extracted from bytes in the TCP stream (transport layer 4) or from the HTTP header, cookies, or resource type (application layer 7). Note that, layer 4 vs 7 is talk here is intended to be more useful for learning than 100% accurate. It's more complicated than pick layer 4 vs 7 - done.
@@ -1220,7 +1220,11 @@ A single LB presents a single point of failure. If the single load balancer goes
 - Active-active = There are multiple, ready LBs in use. If one active goes down, then another is ready to take the additional load.
 - Active-passive = One LB is active, another LB is in standby. The standby LB is ready to hop in if the active one goes down.
 
-The more nines you need, the more LBs you'll need to supply.
+#### Load balancer uptime
+The more nines you need, the more LBs you'll need to supply. Now, this isn't perfect, but the availability is roughly `1-(Nines^LB_Count)`. So, two servers with 99% availability becomes `1-(0.01*0.01)=0.9999`. Now, this doesn't really account for chained failures 
+
+#### Service discovery
+Again, servers can come up and down frequently. A coordination service like Apache Zookeeper or Kubernetes can help with this.
 
 References:
 - [Load balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques)
@@ -1257,8 +1261,78 @@ Before clients can get resources from a CDN, the content needs to be delivered t
 - Resources can be **pushed** to the CDN. That is, software engineers push assets up and then those assets are propagated through the other CDN nodes. Push is flexible and can be accurate, but it requires engineers to put in maintenance effort.
 - **Pull** CDNs will fetch assets based on request. If the CDN doesn't have the asset, it'll be retrieved from the origin server. Pull CDNs relax the maintenance burden and save space as assets are only uploaded on request. Unfortunately, pull CDN disadvantage comes in the form of duplicate requests to the origin server. If an asset isn't cached and CDNs receive many requests, they can send duplicate requests to the origin server for content. Also, first time visitors will have a slow experience. One could offset this by manually requesting pages as soon as they are available, however.
 
+### Blob storage
+Now, even with using a CDN, our file storage and access speed is limited. We can circumvent this using blob storage which store files in a scalable, available, and durable way and can be configured to be private or public.
+
+Modern blob storage has tons of great abstractions like files, queueus, and tables. Amazon's S3 even allows you to query file data with SQL via S3 Select which is super cool. We'll only focus on file storage here.
+
+#### Blob vs File
+Blobs themselves are considered to be more generic than a file. Blobs can include really any binary data include images, audio files, video files, DB records, executables, cryptographic data, etc.
+
+##### Traditional hierarchical file-based systems
+These traditional file storage systems include File Allocation Tables (FAT) and New Technology File System (NTFS). Broadly speaking, they store files like:
+```
+C:\
+├── Program Files
+│   ├── Microsoft Office
+│   │   ├── Word.exe
+│   │   ├── Excel.exe
+│   │   └── PowerPoint.exe
+│   └── Adobe
+│       ├── Photoshop.exe
+│       └── Illustrator.exe
+├── Users
+│   ├── User1
+│   │   ├── Documents
+│   │   │   └── Report.docx
+│   │   └── Pictures
+│   │       └── Photo1.jpg
+│   └── User2
+│       ├── Documents
+│       └── Pictures
+└── Windows
+```
+- **Organization:** They organize data in a hierarchical or tree-like structure with directories (folders) and files.
+- **Metadata:** Each file and folder typically has associated metadata, such as file attributes, permissions, and timestamps.
+- **Access Methods:** Files are accessed using a file path within the hierarchical structure, and traditional file operations like reading, writing, and deleting are common.
+- **Structured Storage:** These systems provide a structured way to store various types of data, including text files, executables, and multimedia files, within a file hierarchy.
+- **File Naming:** Files are often identified by names within their respective directories.
+
+##### Blob storage
+Binary Large OBject (BLOB) are used to efficiently store and retrieve data. Blob's are considered more general than files and do not have the strict adherence to hierarchy. It also introduces different access patterns and using DNS to find files.
+
+- **Binary Large Objects (Blobs):** Blob storage is designed specifically for handling binary large objects (BLOBs), which can include files but also any other binary data.
+- **Flat Namespace:** Blob storage often provides a flat namespace, meaning it doesn't enforce a hierarchical structure on the stored data. Instead, it allows flexibility in organizing data.
+- **Unstructured Data:** Blob storage is well-suited for unstructured data and is not limited to the traditional file and folder structure.
+- **Scalability:** Blob storage is highly scalable and can handle massive amounts of data, making it suitable for cloud-based applications.
+- **Different Access Patterns:** While traditional file systems are designed for file-based access patterns, blob storage is often used in scenarios where there are diverse access patterns and a need for versatile data storage.
+
+#### Blob storage
+In Azure Storage (AS), there are many *storage clusters* in different locations. There's lots of redundancy and backup power to achieve a high degree of nines.
+
+A centralized *location service* creates new accounts, allocates accounts to clusters, and moves accounts to redistribute load. Customers can pick which cluster to allocate and a new DNS record will be added that maps an account name to a cluster.
+
+Each storage cluster is composed of front-end, partition, and streaming layer abstractions, each with there own manager or control plane.
+- **Front-end** A reverse-proxy that authenticates and routes requests to the appropriate partition server.
+- **Partition** Our high level file/blob operations are translated here. It holds indices with metadata that point to an account's stream of data. Per it's name, it handles managing partitions and dynamically splitting them when they're too large. The partition layer also replicates accounts around for load balancing and disaster recovery.
+- **Stream** This is a distributed append-only file system. There's no changing an existing blob, only replacing it. *Extents* store chunks of binary data that make up the blob. *Streams* then consist of many extents. This layer abstracts away the underlying storage concerns, uses streaming data, and manages the extents. It also allocates new extents or tries to fix unavailable or faulty extents. Underneath the hood, this layer is using chain replication for the extents which will be passed to the low-level storage servers. This chain replication provides strong consistency guarantees.
+
+#### Blob access
+In terms of accessing blobs on AS, the account and file name in AS can be used to create a unique URLs and can be looked up via DNS. For example, `https://my_account_name.blob.core.windows.net/my_file_name`. Furthermore, we can adjust the access privileges on blob data. We could make a blob completely public facing or require certain IAM settings.
+
 ## Reliability
 [Top](#the-study-guide)
+
+At scale, anything that can go wrong usually does. Computer parts break, network errors galore, programmer errors, and so on.
+
+1. **Hardware problems** Like CPUs, memory, or HDDs dying.
+2. **Bad error handling** Programmers mishandle certain exceptions or don't handle them at all. 
+3. **Configuration changes** Updating certain configuration values can be just as deadly as a bad coding mistake. Configurations should be managed. For example, changing feature flags or YAML configuration files should be done carefully.
+4. **Single points of failure (SPOF)** Any SPOF isn't super great. A single DNS server, LB, replica, availability zone, etc. can all bring down your application. Humans, those with certain positions or privileges, can bring down entire systems. For example, a coder can push a single bug and bring down systems.
+5. **Network issues** There are just tons of reasons for slow or missing responses. Even semi-slow responses can lead to *gray failures* of sorts.
+6. **Memory or resource leaks** 
+7. **Load pressure** Sudden spikes in load or load pressure can cause system outages for pieces that doesn't scale. For example, in a prior gig, they put up a product for free. The sudden influx of customers caused the system to go down. Alteratively, Christmas season shoppers can suddenly overwhelm a system or similar.
+8. **Cascading failures** Say a LB is hands requests to two downstream servers A and B. Everything is going smoothly but then server B suddenly dies. LB says, "No problem, I'll send all the requests to A now." Suddenly, server A can't keep up and dies. A cascading failure.
 
 ### Service level terminology
 | Abbreviation | Term | Definition | Example
@@ -1298,7 +1372,7 @@ Obviously, zero downtime in systems is ideal, but this ain't realistic. We want 
 
 Also note that downtime among serial systems is typically additive. Say we've get two services named A and B where A depends on B. If they both have 5 nines of uptime, then they could both be down for 1s per day but there's no guarantee these times overlap. So, the worst case is going to be 2 services * 1s of downtime = 2s of downtime.
 
-The more nines, the more expensive it is. For example, in terms of load balancers (LB), you may need to consider LBs+1, LBs+2, or 2*LBs to get your desire uptime.
+The more nines, the more expensive it is. For example, in terms of load balancers (LB), you may need to consider LBs+1, LBs+2, or 2*LBs to get your desire uptime. Now, this formula isn't perfect, but the availability is roughly `1 - ((1 - server_nines_as_decimal)^server_Count)`. So, two servers with 99% availability becomes `1-(0.01*0.01)=0.9999`. Now, again, this doesn't account for chained failures among many replicas.
 
 ## Sorting
 We need to memorize a basic sorting algorithm, like insertion sort:

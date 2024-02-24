@@ -22,11 +22,11 @@ func sortFunc[T any](arr *[]T, low, high int, less func(i, j T) bool) {
 func partition[T any](arr *[]T, low, high int, less func(i, j T) bool) int {
 	a := *arr // Dereference for easy use
 
-	pivot := a[high] // Chose the last element as our pivot
+	pivot := a[high] // Choose the last element as our pivot
 	i := low - 1     // Last index of our elements that are <= the pivot, it is the slow pointer
 
 	// Iterate through the array and rearrange elements based on the pivot
-	// j is the last index of our elmeents that are > the pivot, it is the fast pointer
+	// j is the last index of our elements that are > the pivot, it is the fast pointer
 	for j := low; j < high; j++ {
 		if !less(pivot, a[j]) {
 			i++

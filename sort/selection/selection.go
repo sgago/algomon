@@ -7,7 +7,6 @@ import (
 )
 
 // Sort a collection via selection sort.
-//
 //   - Time complexity is O(N^2). Two loops. Note that inner loop iterations is a factor of the outer.
 //   - More efficient than bubble or selection sort; worse than the advanced quick, merge, or heap sorts.
 //   - Stable: Yes. Does not swap elements with equal values.
