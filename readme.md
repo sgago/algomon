@@ -3,6 +3,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
 
 - [The Study Guide](#the-study-guide)
 - [Data structures and algorithms](#data-structures-and-algorithms)
+  - [Math](#math)
   - [Runtimes](#runtimes)
     - [Summary](#summary)
     - [O(1)](#o1)
@@ -17,6 +18,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [O(2^N)](#o2n)
     - [O(N!)](#on-1)
     - [Amortized](#amortized)
+    - [Time complexity math](#time-complexity-math)
     - [Tricks](#tricks)
   - [Hash functions and maps](#hash-functions-and-maps)
     - [Common hash functions](#common-hash-functions)
@@ -25,6 +27,8 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Sorting](#sorting)
     - [Summary](#summary-1)
     - [Go sort](#go-sort)
+    - [Cycle sort](#cycle-sort)
+      - [Semi sort](#semi-sort)
   - [Trees](#trees)
     - [Terminology](#terminology)
     - [Binary trees](#binary-trees)
@@ -96,6 +100,9 @@ Welcome to my personal study guide for leetcode problems and systems design.
         - [Blob storage](#blob-storage-1)
       - [Blob storage](#blob-storage-2)
       - [Blob access](#blob-access)
+    - [Microservices](#microservices)
+      - [API gateway](#api-gateway)
+        - [GraphQL](#graphql)
   - [Reliability](#reliability)
     - [Common failures](#common-failures)
     - [Risk](#risk)
@@ -103,11 +110,16 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [Fault isolation](#fault-isolation)
       - [Shuffle sharding](#shuffle-sharding)
       - [Cellular architecture](#cellular-architecture)
-  - [Monitoring and observability](#monitoring-and-observability)
+      - [Pool architecture](#pool-architecture)
+  - [Monitoring](#monitoring)
+    - [Pre-aggregation](#pre-aggregation)
     - [Service level terminology](#service-level-terminology)
+    - [Service level indicators](#service-level-indicators)
 - [Napkin math](#napkin-math)
   - [Costs](#costs)
   - [Uptime in nines](#uptime-in-nines)
+  - [Little's Law](#littles-law)
+  - [The rule of 72](#the-rule-of-72)
   - [Sorting](#sorting-1)
   - [Stacks and queues](#stacks-and-queues)
   - [Data storage](#data-storage)
@@ -124,6 +136,12 @@ Welcome to my personal study guide for leetcode problems and systems design.
 
 # Data structures and algorithms
 [Top](#the-study-guide)
+
+## Math
+There's some math to brush up on first. Most of it's high-school level, fortunately!
+- **Logarithms:** To what power must we raise a certain base to get a number? We frequently deal with base Log base 2 here, which tells us how many times we need to multiply a number to reach a certain value. For example, `Log2(8) = 3` (`8 = 2 * 2 * 2 = three 2's`) reads like, "How many times do we need to multiple 2 to get 8?". Be aware of context! In mathematics classes, we usually assume Log base 10 when the log base is omitted, but for computers we are *probably* assuming Log base 2!
+- **Permutations and factorials:** These come up in combinatorial problems and similar. Say we want to count the number of unique ways we can arrange the letters a, b, and c. There's 6 possible ways (sequences): `3 * 2 * 1` or `3!`. Rarely, does something more complicated come up, but it does happen like with [shuffle sharding](#shuffle-sharding). For example, with a total of 6 items, how many ways can we arrange them in groups of two? This is given by `6!/(2!4!) = 15` or `N!/R!(N - R)!` where `N` is the total elements and `R` is the size of the subsets.
+- **Arithmetic sequences** An arithmetic sequence is a sequence of numbers where the difference between consecutive terms is constant. Like `1, 2, 3, 4, 5` or `2, 4, 5, 8, 10`. The sum of an arithmetic sequence can be quickly calculated with `(first_element + last_element) * number_of_elements / 2`.
 
 ## Runtimes
 How long an algorithm takes to run for a given input. Also called "time complexity" or "TC" for short.
@@ -173,12 +191,12 @@ for i := N; i > 0; i /= 2 {
 ```
 
 ### O(KlogN)
-Typically, when you need to do a log(N) process K times.
+Typically, when you need to do a log(N) process K times. Examples:
 - Heap push/pop K times, like merging N sorted lists
 - Binary search K times
 
 ### O(N)
-Linear time. Typically, looping thru a data struct a constant number of times.
+Linear time. Typically, looping through a data struct a constant number of times. Examples:
 - Traversing an entire array or linked list.
 - Two pointer solutions
 - Tree or graph traversal due to visiting all the nodes or vertices
@@ -246,16 +264,27 @@ Note, this one is hard to analyze/spot at first.
 ### Amortized
 Amortized time, meaning to gradually write off the initial time costs, if an operation is rarely done. For example, if we had N^2*N tasks, we could consider the solution O(N) instead of O(N^2) = N*O(1) * O(N) if we only do the N^2 task rarely. For example, if we dynamically size an array one time at startup.
 
-### Tricks
-Note that, like the other runtimes, we ignore constant factors and lower order terms: 5N^2 + N = 5N^2 = N^2
-
-Remember, N is sort of like infinity in math. It swallows
-smaller N terms and constants. Unlike infinity, it does not swallow up other terms if multiplication is involved.
+### Time complexity math
+N is *sort of* like infinity. It swallows smaller N terms and constants. Unlike infinity however, it does not swallow up other values if multiplication is involved, like with NlogN.
 - 2N -> N
 - N + logN -> N
 - NlogN -> NlogN
 - 3N^3 + 2N^2 + N -> N^3
 - N^2 + 2^N + N! -> N!
+
+Note that, like the other runtimes, we ignore constant factors and lower order terms: 5N^2 + N = 5N^2 -> N^2.
+
+### Tricks
+The maximum number of elements, usually noted in the constraints, will give you *clues* about the runtime and *maybe* the corresponding solution. Why? The leetcode runners are docker containers with a very short shelf life by design. There's a maximum number of operations they'll let your run. If your code takes too long, then leetcode will kill your container and return a time limit expired (TLE) error. So, they actually have to limit the number of input elements.
+
+N Constraint | Runtimes | Description
+--- | --- | ---
+N < 20 | 2^N or N! | Brute force or backtracking.
+20 < N < 3000 | N^2 | Dynamic programming.
+3000 < N < 10^6 | O(N) or O(NlogN) | 2 pointers, greedy, heap, and sorting.
+N > 10^6 | O(logN) or O(1) | Binary search, math, cycle sort adjacent problems.
+
+Again, guessing the optimal solution from the size of input elements constraint is certainly error prone. This could *suggest a maybe solution*.
 
 ## Hash functions and maps
 In short, a hash function converts arbitrary sized data into a fixed value, typically an Int32. For example, summing all integers in an array and mod'ing them by 100. We convert a bunch of data or text into a smaller, ergonomic number.
@@ -295,17 +324,18 @@ Collisions are unavoidable, so we need to design around it. For example, if "ann
 
 ### Summary
 A summary of common algorithms, courtesy of ChatGPT.
-| Algorithm            | Time Complexity (Worst Case) | Stable | In-Place | Adaptable | Parallelizable | Description                                              |
-|----------------------|-----------------------------|-----------|----------|-----------|-----------------|----------------------------------------------------------|
-| [Bubble Sort](./sort/bubble/bubble.go)          | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Repeatedly compares and swaps adjacent elements.          |
-| [Selection Sort](./sort/selection/selection.go)       | O(n^2)                       | No        | Yes      | No        | Yes (limited)   | Repeatedly selects the minimum element and swaps with the current position. |
-| [Insertion Sort](./sort/insertion/insertion.go)       | O(n^2)                       | Yes       | Yes      | Yes       | Yes (limited)   | Builds the sorted list one element at a time by inserting into the correct position. |
-| [Merge Sort](./sort/merge/merge.go)           | O(n log n)                   | Yes       | No       | Yes       | Yes             | Divides the input into halves, recursively sorts them, and merges them. |
-| [Quick Sort](./sort/quick/quick.go)           | O(n^2) (rare), O(n log n)    | No        | Yes      | Yes       | Yes (limited)   | Chooses a pivot, partitions the data, and recursively sorts the partitions. |
-| Heap Sort            | O(n log n)                   | No        | Yes      | No        | Yes             | Builds a binary heap and repeatedly extracts the maximum element. |
-| Shell Sort           | O(n log^2 n) (worst known)   | No        | Yes      | No        | No              | A variation of insertion sort with multiple passes and varying gap sizes. |
-| Radix Sort           | O(nk) (k is the number of digits) | Yes  | Yes      | No        | Yes             | Processes digits or elements in multiple passes, each pass sorted independently. |
-| Bucket Sort          | O(n^2) (worst case)           | Yes      | No       | Yes       | Yes             | Distributes elements into buckets and sorts each bucket independently. |
+| Algorithm | Time Complexity (Worst Case) | Stable | In-Place | Adaptable | Parallelizable | Description |
+| --- | --- | --- | --- | --- | --- | --- |
+| [Bubble](./sort/bubble/bubble.go) | O(n^2) | Yes | Yes | Yes | Yes (limited) | Repeatedly compares and swaps adjacent elements.          |
+| [Selection](./sort/selection/selection.go) | O(n^2) | No | Yes | No | Yes (limited) | Repeatedly selects the minimum element and swaps with the current position. |
+| [Insertion](./sort/insertion/insertion.go) | O(n^2) | Yes | Yes | Yes | Yes (limited) | Builds the sorted list one element at a time by inserting into the correct position. |
+| [Merge](./sort/merge/merge.go) | O(n log n) | Yes | No | Yes | Yes | Divides the input into halves, recursively sorts them, and merges them. |
+| [Quick](./sort/quick/quick.go) | O(n^2) (rare), O(n log n) | No | Yes | Yes | Yes (limited) | Chooses a pivot, partitions the data, and recursively sorts the partitions. |
+| Heap | O(n log n) | No | Yes | No | Yes | Builds a binary heap and repeatedly extracts the maximum element. |
+| Shell | O(n log^2 n) (worst known) | No | Yes | No | No | A variation of insertion sort with multiple passes and varying gap sizes. |
+| Radix | O(nk) (k is the number of digits) | Yes | Yes | No | Yes | Processes digits or elements in multiple passes, each pass sorted independently. |
+| Bucket | O(n^2) (worst case) | Yes | No | Yes | Yes | Distributes elements into buckets and sorts each bucket independently. |
+| [Cycle](./sort/cycle/cycle.go) | O(N^2) | No | Yes | No | No | Based on the idea that elements can be sorted by setting them to their correct index position. Theoretically optimal in terms of writes.
 
 ### Go sort
 We don't typically author sort algorithms from scratch in production. Some computer scientist has implemented pattern defeating quick sort (pdqsort) for us so that we don't have to. In go, use `slices.Sort` or similar:
@@ -327,6 +357,14 @@ cmp := func(a, b int) int {
 
 slices.SortFunc(arr, cmp)
 ```
+
+### Cycle sort
+We know a collection is sorted if all elements are in increasing or decreasing order, but how would we know if an individual element is sorted? Naively, we might think `left element < the element being considered < right element` but this won't work for a collection like `5, 1, 2, 3, 4`. We know an element is sorted if it's index is equal to a count of all elements smaller than it. For example, in `1, 2, 3, 4, 5`, we know 2 is sorted because its index in the slice is equal a count of all numbers less than it, in this case, just 1.
+
+[Cycle sort](./sort/cycle/cycle.go) is based on this idea of elements being at their proper index position.
+
+#### Semi sort
+There's a class of problems that are solved via semi-sorting elements. For example, the [find the minimum missing positive number](https://leetcode.com/problems/first-missing-positive/description/) like problems can be solved this way. (Warning: This semi sort uses O(N) space and it isn't an optimal solution for this problem!) This problem can be solved faster than O(NlogN) time if we only partially, kind-of sort the array. In short, we simply move elements to the same index as their value ([here](./sort/semi/semi.go)). In a new slice, we copy 0 to index position 0, 1 to index position 1, etc. "But what about index out of range errors!?" If element values is not in-range, we can just ignore them, copy the value as is, or use a bad value.
 
 ## Trees
 Trees are a type of graph composed of nodes and edges.
@@ -745,6 +783,7 @@ We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= star
 6. There is one administrator;
 7. Transport cost is zero;
 8. The network is homogeneous.
+
 From [Fallacies of distributed computing](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing)
 
 ## Communication
@@ -836,7 +875,7 @@ Certificates need to be present in the client in the client's trusted store. A t
 Here's an example of a certificate:
 ```
 -----BEGIN CERTIFICATE-----
-MIIDdzCCAl+gAw (a lot more garbled text follows)...
+MIIDdzCCAl+gAw (many more random characters follow)...
 -----END CERTIFICATE-----
 ```
 
@@ -869,7 +908,9 @@ Note that a common mistake is to let the certificates expire, a single point of 
 With encryption we can prevent others from reading the data. With authentication we can prove who we're talking with. However, even with all this, bits could get flipped accidentally or maliciously. A hash-based message authentication code (HMAC) is sent along during TLS. Note that TCP's checksum can fail to detect errors for 1 in 16 million to 1 in 10 billion packets. So, with packets of 1KB in size, it happens once in 16 GB to 10 TB of data transmitted.
 
 ### Discovery and DNS
-So, IP addresses are cool and all, but we need a way to lookup the IP addresses of servers. There's 2^128 IPv6 and 2^32 IPv4 addresses. Good luck remembering them. Worse yet, IP addresses of servers change all the time. Sometimes the admins need to move requests to a different cluster or spread load among many clusters. DNS helps with this.
+[This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a solid deep dive into DNS and is worth a watch if you have the time. Even the first 15 minutes is valuable.
+
+IP addresses are cool and all, but we need a way to lookup the IP addresses of servers. There's 2^128 IPv6 and 2^32 IPv4 addresses. Good luck remembering them. Worse yet, IP addresses of servers change all the time. Sometimes the admins need to move requests to a different cluster or spread load among many clusters. DNS helps with this.
 
 Funnily enough, DNS is its own layer 7 protocol.
 
@@ -892,8 +933,6 @@ Again, the results are typically cached along the way. Similar to HTTP caching, 
 In terms of resiliency, DNS is single point of failure since normal humans simply won't find the IP address of your server and type it in to the browser URL. If, there's a failure and the TTL is stale, we could still try returning the stale result. Continuing to operate or partially operate while a dependency is down is called static stability.
 
 Note that DNS used to be in plaintext, but now it uses TLS. Yay.
-
-[This video](https://www.youtube.com/watch?v=drWd9HIhJdU) is a solid deep dive into DNS.
 
 ### Application programming interfaces
 Once we can create semi-reliable and secure connections, we can finally discuss having the client invoke operations on the server. Typically, this is done through application programming interfaces (APIs). APIs can be **direct** or **indirect**.
@@ -1329,6 +1368,32 @@ Each storage cluster is composed of front-end, partition, and streaming layer ab
 #### Blob access
 In terms of accessing blobs on AS, the account and file name in AS can be used to create a unique URLs and can be looked up via DNS. For example, `https://my_account_name.blob.core.windows.net/my_file_name`. Furthermore, we can adjust the access privileges on blob data. We could make a blob completely public facing or require certain IAM settings.
 
+### Microservices
+Monolithic architectures, a single large code base with all the business concerns in one code base, are often great for certain companies, teams, and projects. It's easy to coordinate changes, run the application, handle inter-process communication well, and lower complexity. At least initially. It's often recommended to start with a monolith and design with clear domains/boundaries.
+
+Monoliths struggle to scale in terms of service demands and programmer efficiency. Monoliths can become unwieldy if they grow overly large, and this is especially true if they evolve poorly. New features, understanding code, adding features, and bug fixing can grow to be hard. Suddenly, reverting a change becomes very hard and time consuming.
+
+Microservices, on the other hand, can alleviate these pain points while introducing some new ones. Note that there's really nothing micro about microservices and the name is a misnomer. Microservices are independently managed and deployed services that communicate via APIs or message queues. Typically, one team owns the service and can dictate its code, releases, testing, availability, etc. It's also easier on new hires, too.
+
+Now, microservices add a great deal of complexity overall.
+- Without conventions and standardization, each team has as choose-your-own-adventure with their microservices. Nothing is stopping one team from using Java while others use Python; one team could test with xUnit and another could test with NUnit. There's also many cross-cutting concerns such as logging.
+- Half the problems with distributed systems come from communications. This introduces more new and interesting communication problems.
+- Poorly handled API evolution, shared databases, overly communicative, or badly laid out domains or responsibilities can all introduce a horrible *distributed monolith* anti-pattern. A distributed monolith has all the cons of a monolith but bonus horrors of a distributed system. Agility is reduced as releases must be coordinated, scalability is limited due to the coupling, finding errors is hard, and correlated errors become more frequent. To avoid it, establish clear service responsibilities, avoid shared databases, use async communications such as message queues, implement API versioning, and monitor monitor monitor.
+- Resource is more provisioning with microservices. Again, this needs to be standardized or each team will end up with something different.
+- Debugging and testing can be more challenging. Certain issues will only surface through service interacting together.
+- Microservices often have separate datastores and this creates eventual consistency. There's nothing stopping services from changing data and disagreeing about what is true.
+
+Again, if a monolith is well designed with proper boundaries, we can pull microservices out when needed.
+
+#### API gateway
+We want to minimize the number of endpoints that clients need to hit. We don't want consumers to have to worry about addressing our 50 different microservices. We can introduce an API gateway, an abstraction and reverse proxy, that hides the microservice architecture from clients. We can route requests via the reverse proxy, change internal endpoints without breaking clients, stitch together data from multiple services, and handle data inconsistencies. An API gateway is especially beneficial for public APIs backed by microservices. The gateway can also provide rate-limiting, caching, and authentication/authorization. Again, we need to be mindful of tradeoffs with a gateway: scaling, coupling, and microservice API changes. In terms of implementing an API gateway, you can
+- Create your own
+- Start with a reverse proxy like Nginx (pronounced engine-X)
+- Use a managed service like Google's [Apigee](https://cloud.google.com/apigee?hl=en)
+
+##### GraphQL
+The gateway can also perform translation. For example, HTTP requests can be converted to a gRPC call or it could return less data for the mobile app. Graph APIs can help with this. [GraphQL](https://graphql.org/) (graph-ickle), for example, is a popular server-side library in this space that allows clients to simply request what they need. The idea is a backend-for-frontends where the frontend can query only for what it needs. Theoretically, if designed well, GraphQL should increase frontend flexibility for changes, decreases load through getting multiple resources in a single request, and reduces querying for superfluous data. Of course, GraphQL has tradeoffs. GraphQL is complicated to get started and adds yet another dependency. We need to be cognizant of GraphQL security, query limits, and so on else we run the risk of overloading our servers or exposing data to malicious actors. On the other side, [Relay](https://relay.dev/) is a React client library and can make getting data from the GraphQL backend easier.
+
 ## Reliability
 [Top](#the-study-guide)
 
@@ -1351,28 +1416,40 @@ So, risks and failures are not the same thing. Risk is a failure that has a perc
 Note that we can try to rank certain risks, issues, gaps, etc. and determine mitigation or ignoring steps. For example, low risk and impact could maybe be ignored; alternatively, high risk and impact should would be worth mitigating. One could even factor the cost of mitigation into the chart.
 
 ### Redundancy
-Replicas are one defense, but again this has downsides in terms of complexity.
+Replicas are one defense against failures, but again this has downsides in terms of complexity.
 
-Unfortunately, redundancy doesn't solve all our risks. *Correlated errors*, failures that can hammer many servers at once, will still hurt us. For example, redundancy won't help if a software bug deployed to all the servers. If an entire data center wide outage will bring down... the entire data center.
-
-Now, cloud providers replicate stacks to multiple data centers. Multiple data centers in a region make an *availability zone (AZ)*. Data centers are close enough to have low latency but far enough away to reduce disaster chance.
+Unfortunately, redundancy doesn't solve all our risks. *Correlated errors*, failures that can hit many servers at once, will still hurt. For example, redundancy won't help if a software bug deployed to all replicas. Likewise, a total data center outage will bring down all the replicas too. To help, cloud providers replicate stacks to multiple data centers. Multiple data centers in a region make an *availability zone* (AZ). Data centers are close enough to have low latency but far enough away to reduce disaster chance.
 
 ### Fault isolation
-We can isolate failures and problems, much like the bulkheads on a ship. Without a bulkhead, a single leak can sink the entire ship. However, by incorporating bulkheads, only a specific part of the ship is affected, as we've compartmentalized it with walls. The ship is degraded, but it doesn't succumb entirely. Distributed systems encounter similar vulnerabilities, akin to "leaks." A single user might send malicious requests capable of bringing down the entire system, or normal bots and crawlers, mimicking human behavior with rapid request capabilities, can overwhelm servers. Instead of leaks, we refer to these issues as poison pills.
+We can also isolate problems much like the bulkheads on a ship. Without a bulkhead, a single leak can sink the entire ship. However, by incorporating bulkheads, only a specific part of the ship is affected during a leak, as we've compartmentalized it with walls. The ship is degraded, but it doesn't succumb entirely. Distributed systems encounter similar vulnerabilities, akin to "leaks" called *poison pills*. A single user might send malicious requests capable of bringing down the entire system, or normal bots and crawlers, mimicking human behavior with rapid request capabilities, can overwhelm servers.
 
-Similar to ships, challenges arising from poison pills can be mitigated using the bulkhead pattern - by isolating faults. For instance, consider having 6 replicas and an antagonistic computer bot attempting to disrupt your service. Each request from the bot takes down the specific replica it reaches. With 6 requests, the entire system could be brought down.
+Similar to ship leaks, challenges arising from poison pills can be mitigated by using fault isolation. For instance, consider having 6 replicas and an antagonistic computer bot attempting to disrupt your service. Each request from the bot takes down every replica it can reach. With 6 requests, the entire system could be brought down.
 
 To address this, let's establish 3 pairs of servers to introduce redundancy and consistently direct users to the same server pair. By confining the bot to the same server pair, even if 2 out of 3 server pairs remain operational, only approximately 33% of users will be affected. While not ideal, this approach is superior to the bot impacting all servers and causing a complete system outage.
 
 #### Shuffle sharding
-Now, we can enhance our system further by employing shuffle sharding. Instead of consistently directing the same users to specific replicas, we can dynamically reassign users to minimize shared users between pairs. For instance, users A and B may initially share server 1, but with redundancy measures, we can reposition user A to server 2 and user B to server 3. Consequently, if user A causes a server to go down, user B can still receive service requests, ensuring uninterrupted functionality.
+Now, we can enhance our system further by employing shuffle sharding. The goal is to reduce the number of users that share replicas. Instead of consistently directing the same users to specific replicas, we can dynamically reassign users to minimize shared users between pairs. For instance, users A and B may initially share server 1, but with redundancy measures, we can reposition user A to server 2 and user B to server 3. Consequently, if user A causes a server to go down, user B can still receive service requests, ensuring uninterrupted functionality.
 
 There will still be some user overlap, but it will be less likely. With this pattern, we can increase our bulkheads to 15! The combination formula is `n!/(r!(n-r)!) = 6!/(2!4!) = 15`. This tells the number of unique subgroups we can have.
 
 #### Cellular architecture
-Another strategy is to combine all dependencies together into cell: LBs, storage, servers, etc. Requests can be shared via some gateway service. A benefit is that we can learn the maximum limits of each cell and scale out accordingly. We can totally understand the performance of a cell and how it handles load.
+We can combine all dependencies together into a cell: LBs, storage, servers, etc. and scale out cells on requests. Requests can be shared with cells via a gateway service. A benefit is that we can learn the maximum limits of each cell and scale out accordingly. We can totally understand the performance of a cell and how it handles load.
 
-## Monitoring and observability
+#### Pool architecture
+An alternative to cellular architecture is pool architecture. Similar to cellular pattern, we can spin up and scale out services as needed but we can do this on a per customer basis. Small clients could share resources while jumbo customers could have their own separately scaled out resources. This way, a high traffic customer won't resource the smaller customers. See [this article](https://medium.com/@raphael.moutard/forget-your-microservices-the-unparalleled-benefits-of-pool-architecture-63b462989856) for more details.
+
+## Monitoring
+Monitoring is mainly used to alert teams to failures and monitor system health via dashboards: pub/sub queue sizes, dead letter queue sizes, CPU utilization, RAM utilization, SLO/SLI values, replica counts, request counts, throughput, replica restarts, and so on.
+
+A metric is a time series of raw measurements or samples of resource usage or behavior represented by a timestamp and floating point number. Metrics are typically tagged with many labels, a set of key-value pairs, that make filtering easier. We can indicate the service, region, node, cluster, app name, etc. Typically metrics are stored in a time series database (TSDB) like [Prometheus](https://prometheus.io/) that often use different [data models](https://prometheus.io/docs/concepts/data_model/).
+
+Minimally, we want services to output their load like request throughput and their internal state such as memory usage.
+
+### Pre-aggregation
+Typically, the telemetry services, like Azure Application Insights telemetry, will batch and send out telemetry data. Application Insights can store data locally in the event a computer shuts down unexpectedly and can be used to correlate data from the frontend and backend of systems. Client libraries will typically perform some pre-aggregation themselves before transmitting the data.
+
+Storing and querying the time series data can get expensive. Typically, the telemetry services pre-aggregate data into different buckets: 1 min, 5 minutes, 1 hour, 3 hours, 1 day, etc. and include summary statistics like sums, averages, or percentiles. AWS's CloudWatch pre-aggregates data on ingestion.
+
 
 ### Service level terminology
 | Abbreviation | Term | Definition | Example
@@ -1381,8 +1458,19 @@ Another strategy is to combine all dependencies together into cell: LBs, storage
 | SLO | Service Level Objective | A target or range of acceptable SLI values. | Availability >= 99.99%, avg. response times <= 400ms, P99 response times <= 400ms, etc. Again, queries per second (QPS), on the other hand, isn't under our control and doesn't make for a good SLI/SLO.
 | SLA | Service Level Agreement | 
 
+### Service level indicators
+Metric values can vary, sometimes drastically. Just because one request in a million took 900ms doesn't mean that an engineer should be woken up at 3am. Service level indicators (SLIs) measure one level of service; typically this is an aggregated error rate, throughput, response time. Typically, an SLI is calculated via good count / total count. Some common SLIs include:
+- Availability = successful requests / all requests.
+- Response time = fraction of requests faster than some threshold
+
+We want to pick SLIs that *best measure the user experience*. So, for response times, measuring the response time client-side would be best provided this is not cost and effort prohibitive.
+
+Next, we typically analyze response times via summary statistics like average or percentiles. We want to filter out long-tail latencies that skew our statistics by using the 99th percentile or similar.
+
 # Napkin math
 [Top](#the-study-guide)
+
+"Estimation is a vital skill for an engineer. It’s something you can get better at by practicing." - [Roberto Vitillo](https://robertovitillo.com/back-of-the-envelope-estimation-hacks/)
 
 Also known as back of the envelope calculations. These numbers are **heavily** rounded for memorizing. We want to be in the ballpark for creating useful mental models and to develop a gut feel for numbers being discussed to streamline conversations and make sure we've got a top-notch mental model of what's being talked about. If you need accurate numbers, then do your Ti-83 math instead.
 
@@ -1413,6 +1501,13 @@ Obviously, zero downtime in systems is ideal, but this ain't realistic. We want 
 Also note that downtime among serial systems is typically additive. Say we've get two services named A and B where A depends on B. If they both have 5 nines of uptime, then they could both be down for 1s per day but there's no guarantee these times overlap. So, the worst case is going to be 2 services * 1s of downtime = 2s of downtime.
 
 The more nines, the more expensive it is. For example, in terms of load balancers (LB), you may need to consider LBs+1, LBs+2, or 2*LBs to get your desire uptime. Now, this formula isn't perfect, but the availability is roughly `1 - ((1 - server_nines_as_decimal)^server_Count)`. So, two servers with 99% availability becomes `1-(0.01*0.01)=0.9999`. Now, again, this doesn't account for chained failures among many replicas.
+
+## Little's Law
+Lot's of things can be queues: message brokers like Google's Pub/Sub or even a web service. Little's law can help us relate the the average of new items arriving into a queue, the average time an item spends in a queue, and the number of items in the queue.
+`avg_items_in_queue = avg_rate_of_new_items_coming_into_the_queue * time_items_stay_in_queue` or `q = r * t`. Say we have a service that takes an average of a 100ms to process a request and we are getting 2 million requests per second (rps). The equation via Little's Law is `r * t = 2_000_000 request/S * 0.1 S/request = 200_000 requests total = q`. We can take this a step further and calculate the number of computers we need. Assume that the requests are data heavy, and that we'll need an entire CPU thread for each request. If we have 200K requests per second and we have 8 core machines available, we'll need `200_000 requests / 8 core machines = 25K machines`.
+
+## The rule of 72
+The rule of 72 estimates how long it'll take for a value to double if it grows some percent rate. The rule is `time = 72/rate` or `t = 72/r`. For example, if requests are increasing at 10% per day, then `t = 72/r = 72/10 = 7.2 days`.
 
 ## Sorting
 We need to memorize a basic sorting algorithm, like insertion sort:
@@ -1512,5 +1607,5 @@ Code | Name | Description
 
 # General references
 - [Understanding Distributed Systems](https://understandingdistributed.systems/) is a really great book on the topic and worth a deep dive. The references are all free or easy to access and worth deep-diving on too.
-- [System design primer on GitHub](https://github.com/donnemartin/system-design-primer).
-- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) from Google.
+- [System design primer on GitHub](https://github.com/donnemartin/system-design-primer) is a solid guide for systems interviews.
+- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) from Google is a great resource on reliability, on-call, etc.

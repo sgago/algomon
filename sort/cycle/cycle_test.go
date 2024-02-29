@@ -9,12 +9,12 @@ import (
 
 func TestSortInt(t *testing.T) {
 	nums := []int{3, 1, 2}
-	sortInt(nums)
+	Sort(nums)
 	assert.True(t, slices.IsSorted(nums))
 }
 
 func TestSortInt_WithHigherNumber(t *testing.T) {
 	nums := []int{6, 3, 4, 1, 7}
-	sortInt(nums)
+	Sort(nums)
 	assert.True(t, slices.IsSorted(nums))
 }

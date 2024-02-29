@@ -2,16 +2,9 @@ package cycle
 
 import "cmp"
 
-func Sort[T cmp.Ordered](arr []T) {
-
-}
-
-func SortFunc[T any](arr []T, less func(i, j T) bool) {
-
-}
-
-// Function to perform Cycle Sort on an integer slice
-func sortInt(nums []int) {
+// Cycle sort courtesy of ChatGPT.
+// TODO: Make more generic than just only cmp.Ordered.
+func Sort[T cmp.Ordered](nums []T) {
 	n := len(nums)
 
 	// Traverse the array to start building cycles
