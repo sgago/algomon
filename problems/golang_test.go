@@ -218,6 +218,8 @@ func TestSelect(t *testing.T) {
 			fmt.Println(msg1)
 		case msg2 := <-chan2:
 			fmt.Println(msg2)
+			//default:
+			// If we uncomment the default case, this loop'll exit prematurely
 		}
 	}
 }
@@ -341,7 +343,7 @@ func TestBurstyRateLimiting(t *testing.T) {
 	}
 	close(requests) // Close the channel, so we can iterate over it
 
-	// On looping thru requests, you'll immeidately get 3 requests to the burst limit,
+	// On looping thru requests, you'll immediately get 3 requests to the burst limit,
 	// but then the limiter is drained. So, the client'll need to wait for 200ms to get another one.
 	for req := range requests {
 		<-limiter

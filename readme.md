@@ -41,8 +41,8 @@ Welcome to my personal study guide for leetcode problems and systems design.
   - [Backtracking](#backtracking)
   - [Graphs](#graphs)
   - [Dynamic programming](#dynamic-programming)
-    - [Strategy for solving dynamic programming problems](#strategy-for-solving-dynamic-programming-problems)
-      - [Top down or bottom up?](#top-down-or-bottom-up)
+    - [Strategy for solving DP](#strategy-for-solving-dp)
+    - [Top down or bottom up DP?](#top-down-or-bottom-up-dp)
     - [Tricks](#tricks-1)
   - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
   - [Intervals](#intervals)
@@ -661,8 +661,8 @@ Now, sometimes, when solving DFS problems, we need to
 Alternatively, we can store state, say a max number, in a global variable.
 
 ## Backtracking
-Backtracking tacks on some new concepts on top of trees and DFS.
-1. We can make the tree as we go, creating and deleting child nodes as we traverse through.
+Backtracking tacks on some new concepts on top of trees and DFS. In short, the problems don't always give us tree or graph to work with. Sometimes, we have to make the generate the tree or graph as we go.
+1. Again, we can make the tree as we go, creating and deleting child nodes as we traverse through.
 2. We can drag state around via parameters/returns or with global/struct variables.
 3. If we get some crazy 2^N to N! memory usage with backtracking combinatorial problems, we may need to memoize intermediate solutions to cut down on memory usage. For a small to mid N, N! will kill our poor computer. Memoize typically means using a map or similar to store intermediate and final solutions to the combinatorial problems.
 
@@ -741,7 +741,7 @@ In DP, the formula used to tabulate Fibonacci numbers is `dp[i] = dp[i - 1] + dp
 
 DP problems can be solved in top-down or bottom-up.
 
-### Strategy for solving dynamic programming problems
+### Strategy for solving DP
 1. **Identify overlapping subproblems:** Determine if the problem exhibits overlapping subproblems. If not, DP will not work and you'll need to try a different approach.
 2. **Handle or preprocess the input (optional):** In some cases, the problem might not provide a straightforward array for DP. For example, see the [perfect squares problems](./problems/dynamic/perfectsquares_test.go) where we need to generate perfect squares first or the [largest divisible subset problem](./problems/dynamic_programming/topdown/largestdivsubset_test.go) where the input needs to be sorted first. Futhermore, you might not realize this straight away which makes the understanding and psuedocoding the problem important.
 3. **Define the memo:** Clarify what needs to memoized. In *most* cases, the memo is the same as, or aligns closely with, the problems output.
@@ -754,8 +754,14 @@ memo[i] = max(memo[i-1], memo[i-2]... memo[0])+1
   - memo[0] is a base case and equals 0
 ```
 
-#### Top down or bottom up?
-
+### Top down or bottom up DP?
+Honestly, it depends on the problem. Generally, from my personal experience from practicing, I prefer DFS + backtracking + memoizing. It lends itself to an iterative problem solving, unlike bottom-up which *feels like* all or nothing. Here's why I like top-down *generally* speaking:
+1. Read the problem, do the design work, figure out wtf is going on.
+2. Typically, I create a `state` struct to track things we need to expand/solve the problem.
+3. Add a queue and load up it's initial state.
+4. Write the loop.
+5. Pop an item off the queue, check for solutions, and then push on the next states.
+6. Once that's solved, add memoizing as an optimization.
 
 ### Tricks
 - If a sequence length is relatively small, say under 3000 elements or so, it may suggest DP due to N^2 or worse time complexity. So, small inputs, may mean DP because the tests will never finish otherwise.
