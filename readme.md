@@ -29,12 +29,15 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [Go sort](#go-sort)
     - [Cycle sort](#cycle-sort)
       - [Semi sort](#semi-sort)
+  - [Binary search](#binary-search)
+    - [Binary search keywords](#binary-search-keywords)
   - [Trees](#trees)
     - [Terminology](#terminology)
     - [Binary trees](#binary-trees)
     - [Binary search trees](#binary-search-trees)
     - [Balanced and unbalanced binary trees](#balanced-and-unbalanced-binary-trees)
     - [Tree traversal](#tree-traversal)
+    - [Tree keywords](#tree-keywords)
   - [Heaps](#heaps)
     - [Go heap](#go-heap)
   - [Depth first search](#depth-first-search)
@@ -46,6 +49,7 @@ Welcome to my personal study guide for leetcode problems and systems design.
     - [Tricks](#tricks-1)
   - [Disjoint union set (DSU)](#disjoint-union-set-dsu)
   - [Intervals](#intervals)
+  - [Keywords](#keywords)
 - [Systems design](#systems-design)
   - [Communication](#communication)
     - [The Internet protocol suite](#the-internet-protocol-suite)
@@ -366,6 +370,36 @@ We know a collection is sorted if all elements are in increasing or decreasing o
 #### Semi sort
 There's a class of problems that are solved via semi-sorting elements. For example, the [find the minimum missing positive number](https://leetcode.com/problems/first-missing-positive/description/) like problems can be solved this way. (Warning: This semi sort uses O(N) space and it isn't an optimal solution for this problem!) This problem can be solved faster than O(NlogN) time if we only partially, kind-of sort the array. In short, we simply move elements to the same index as their value ([here](./sort/semi/semi.go)). In a new slice, we copy 0 to index position 0, 1 to index position 1, etc. "But what about index out of range errors!?" If element values is not in-range, we can just ignore them, copy the value as is, or use a bad value.
 
+## Binary search
+
+```go
+func binarySearch(nums []int) {
+  ans := 0
+  left, right := 0, len(nums)-1
+
+  for left <= right {
+    mid := left + (right-left)/2
+
+    if nums[mid] > nums[left] {
+      // Pull in left side
+      left = mid + 1
+    } else if nums[mid] <= nums[right] {
+      // Pull in right side
+      right = mid - 1
+      ans = mid // Maybe get answer from here
+    }
+  }
+
+  return ans
+}
+```
+
+### Binary search keywords
+These keywords may indicate a binary search if they appear in the story problem text.
+- Sorted integers, sorted strings
+- Rotated array, find peak
+- Any array/slice that could be considered implicitly sorted
+
 ## Trees
 Trees are a type of graph composed of nodes and edges.
 - Trees are acyclic, nodes don't loop back to themselves and create cycles.
@@ -499,6 +533,11 @@ the visits to each node would be:
 - In-order: 1 3 5 7 8 10 14
 - Pre-order: 8 3 1 5 7 10 14
 - Post-order: 1 7 5 3 14 10 8
+
+### Tree keywords
+These keywords may indicate a tree if they appear in the story problem text.
+- Shortest, level-order, zig-zag order, etc.
+- Max depth
 
 ## Heaps
 A min heap is a special tree data structure where
@@ -777,6 +816,9 @@ start1-----end1   // Interval 1
                            start3-----end3    // Interval 3 that doesn't overlap with either 1 or 2
 ```
 We can determine if intervals 1 and 2 overlap if `end1 >= start2 && end2 >= start1`. Notice that the formula returns false for intervals 1 and 3.
+
+## Keywords
+
 
 # Systems design
 [Top](#the-study-guide)
@@ -1398,7 +1440,7 @@ We want to minimize the number of endpoints that clients need to hit. We don't w
 - Use a managed service like Google's [Apigee](https://cloud.google.com/apigee?hl=en)
 
 ##### GraphQL
-The gateway can also perform translation. For example, HTTP requests can be converted to a gRPC call or it could return less data for the mobile app. Graph APIs can help with this. [GraphQL](https://graphql.org/) (graph-ickle), for example, is a popular server-side library in this space that allows clients to simply request what they need. The idea is a backend-for-frontends where the frontend can query only for what it needs. Theoretically, if designed well, GraphQL should increase frontend flexibility for changes, decreases load through getting multiple resources in a single request, and reduces querying for superfluous data. Of course, GraphQL has tradeoffs. GraphQL is complicated to get started and adds yet another dependency. We need to be cognizant of GraphQL security, query limits, and so on else we run the risk of overloading our servers or exposing data to malicious actors. On the other side, [Relay](https://relay.dev/) is a React client library and can make getting data from the GraphQL backend easier.
+The gateway can also perform translation. For example, HTTP requests can be converted to a gRPC call or it could return less data for the mobile app. Graph APIs can help with this. [GraphQL](https://graphql.org/) (graph-ickle), for example, is a popular server-side library in this space that allows clients to simply request what they need. The idea is creating a backend that serves frontend needs (backend-for-frontends) where the frontend can query only for what it needs. Theoretically, if designed well, GraphQL should increase frontend flexibility for changes, decreases load through getting multiple resources in a single request, and reduce querying superfluous data. Of course, GraphQL has tradeoffs. GraphQL is complicated to get started and adds yet another dependency. We need to be cognizant of GraphQL security, query depths and limits, and so on else we run the risk of overloading our servers or exposing data to malicious actors. On the frontend, [Relay](https://relay.dev/) is a React client library and can make getting data from the GraphQL backend easier.
 
 ## Reliability
 [Top](#the-study-guide)
@@ -1456,13 +1498,12 @@ Typically, the telemetry services, like Azure Application Insights telemetry, wi
 
 Storing and querying the time series data can get expensive. Typically, the telemetry services pre-aggregate data into different buckets: 1 min, 5 minutes, 1 hour, 3 hours, 1 day, etc. and include summary statistics like sums, averages, or percentiles. AWS's CloudWatch pre-aggregates data on ingestion.
 
-
 ### Service level terminology
 | Abbreviation | Term | Definition | Example
 | ---- | ---------- | ------- | ---- |
 | SLI | Service Level Indicator | A carefully defined quantitative aspect of the level of service that is being provided. | Request latency in milliseconds, error rates, system throughput, etc. Queries per second (QPS) is not a good SLI since we don't control how many queries from users we get. This doesn't mean that QPS isn't worth knowing, however.
 | SLO | Service Level Objective | A target or range of acceptable SLI values. | Availability >= 99.99%, avg. response times <= 400ms, P99 response times <= 400ms, etc. Again, queries per second (QPS), on the other hand, isn't under our control and doesn't make for a good SLI/SLO.
-| SLA | Service Level Agreement | 
+| SLA | Service Level Agreement | XXXXXXXXXXX
 
 ### Service level indicators
 Metric values can vary, sometimes drastically. Just because one request in a million took 900ms doesn't mean that an engineer should be woken up at 3am. Service level indicators (SLIs) measure one level of service; typically this is an aggregated error rate, throughput, response time. Typically, an SLI is calculated via good count / total count. Some common SLIs include:

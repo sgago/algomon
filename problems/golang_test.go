@@ -408,6 +408,15 @@ type MinHeap []int
 // And implement the heap.Interface type.
 var _ heap.Interface = (*MinHeap)(nil)
 
+func NewMinHeap(nums ...int) *MinHeap {
+	h := &MinHeap{}
+	*h = nums
+
+	heap.Init(h)
+
+	return h
+}
+
 func (h *MinHeap) Len() int {
 	return len(*h)
 }
@@ -439,6 +448,9 @@ func TestHeap(t *testing.T) {
 	heap.Push(h, 1)
 	heap.Push(h, 4)
 	heap.Push(h, 2)
+
+	// Or use this cute ctor which heapifies in-place and is more ergonomic to use
+	// h2 := NewMinHeap(3, 1, 4, 2)
 
 	// Pop elements from the heap h (retrieve in sorted order for a min-heap)
 	// using the heap.Pop(h)
