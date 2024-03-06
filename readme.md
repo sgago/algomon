@@ -1506,13 +1506,13 @@ Storing and querying the time series data can get expensive. Typically, the tele
 | SLA | Service Level Agreement | XXXXXXXXXXX
 
 ### Service level indicators
-Metric values can vary, sometimes drastically. Just because one request in a million took 900ms doesn't mean that an engineer should be woken up at 3am. Service level indicators (SLIs) measure one level of service; typically this is an aggregated error rate, throughput, response time. Typically, an SLI is calculated via good count / total count. Some common SLIs include:
+Metric values can vary, sometimes drastically. Just because one request in a million took 7 seconds doesn't mean that an engineer should be woken up at 3am. Service level indicators (SLIs) measure one level of service; typically an SLI is an aggregated error rate, throughput, response time, or similar. Typically, an SLI is calculated via good count / total count. Some common SLIs include:
 - Availability = successful requests / all requests.
 - Response time = fraction of requests faster than some threshold
 
 We want to pick SLIs that *best measure the user experience*. So, for response times, measuring the response time client-side would be best provided this is not cost and effort prohibitive.
 
-Next, we typically analyze response times via summary statistics like average or percentiles. We want to filter out long-tail latencies that skew our statistics by using the 99th percentile or similar.
+Next, we typically analyze response times via summary statistics like average or percentiles. Again, 1 request in 1000 that's 10 minutes isn't worth waking an engineer. However, outliers can greatly skew our average; for example, a single 10 minute response out of 100. We can filter out *long-tails*, values far from the central distribution, that skew averages by using percentiles. For example, 99th or 99.9th percentiles, typically represented like P99. **This does not mean we should ignore long-tail values. Your most important customers could be having a poor experience.** We want to keep our long-tails in check. They can consume tons of resources and improving them may improve resiliency and average-case scenarios.
 
 # Napkin math
 [Top](#the-study-guide)
